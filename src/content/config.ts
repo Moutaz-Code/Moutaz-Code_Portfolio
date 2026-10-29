@@ -6,7 +6,7 @@ const linkSchema = z.object({
 });
 
 const mediaSchema = z.object({
-  type: z.enum(["image", "gif", "video", "embed"]).default("image"),
+  type: z.enum(["image", "gif", "video"]).default("image"),
   src: z.string().min(1),
   alt: z.string().optional(),
   caption: z.string().optional(),
@@ -40,7 +40,7 @@ const projects = defineCollection({
       links: z.array(linkSchema).default([]),
       media: z.array(mediaSchema).default([]),
 
-      /** Full iframe src from itch.io's "Embed game" dialog, e.g. https://itch.io/embed-upload/12345 */
+      /** iframe src from itch.io (Edit game → Distribute → Embed game), e.g. https://itch.io/embed/12345 */
       itchEmbedUrl: z.preprocess(blankToUndefined, z.string().url().optional()),
       /** ShaderToy shader ID, e.g. "XsXXDn" from shadertoy.com/view/XsXXDn */
       shaderToyId: z.preprocess(blankToUndefined, z.string().min(1).optional()),

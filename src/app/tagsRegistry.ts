@@ -83,6 +83,7 @@ export const TAGS: TagDef[] = [
 
   // Game dev
   { slug: "game-dev", label: "Game Dev", category: "game-dev", aliases: ["gamedev", "game-development"] },
+  { slug: "game-jam", label: "Game Jam", category: "game-dev", aliases: ["jam", "gamejam", "jam-game"] },
   { slug: "unity", label: "Unity", category: "game-dev", aliases: ["unity3d"] },
   { slug: "unreal", label: "Unreal Engine", category: "game-dev", aliases: ["ue", "ue5", "unreal-engine"] },
   { slug: "gameplay", label: "Gameplay", category: "game-dev" },

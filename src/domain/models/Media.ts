@@ -1,4 +1,4 @@
-export type MediaType = "image" | "gif" | "video" | "embed";
+export type MediaType = "image" | "gif" | "video";
 
 export type Media = {
   type: MediaType;

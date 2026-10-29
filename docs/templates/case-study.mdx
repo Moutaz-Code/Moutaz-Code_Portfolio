@@ -1,0 +1,41 @@
+---
+# Copy to src/content/projects/<slug>.mdx — the filename becomes the URL (/projects/<slug>).
+# Only `title` is required. Delete any line you don't need.
+title: Project Name
+summary: One sentence that says what it is and why it's interesting.
+tags: [graphics, unity, hlsl]
+status: completed          # completed (default) | ongoing | coming-soon
+featured: true             # shows on the home page
+dateStart: 2025-10-01
+dateEnd: 2026-01-15        # omit while ongoing → shows "Oct 2025 – Present"
+role: Solo developer
+stack: [Unity 6, URP, HLSL, Shader Graph]
+media:
+  - src: /projects/project-name/cover.webp
+    alt: Hero shot
+  - type: video
+    src: /projects/project-name/breakdown.mp4
+    caption: Effect breakdown
+links:
+  - label: Source
+    url: https://github.com/you/repo
+githubRepo: you/repo
+# shaderToyId: XsXXDn
+# itchEmbedUrl: https://itch.io/embed/1234567
+---
+
+## The problem
+
+What you set out to do, and the constraint that made it hard.
+
+## Approach
+
+How it works. Show the maths or the shader when it's the interesting part:
+
+```hlsl
+float3 n = normalize(cross(ddx(positionWS), ddy(positionWS)));
+```
+
+## What I'd do differently
+
+Short and honest.
