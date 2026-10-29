@@ -39,9 +39,6 @@
         const url = new URL(href, window.location.origin);
         if (url.origin !== window.location.origin) return;
 
-        // Skip: admin routes
-        if (url.pathname.startsWith("/admin")) return;
-
         // Skip: same page (hash navigation on current page)
         if (url.pathname === window.location.pathname && url.hash) return;
       } catch {
