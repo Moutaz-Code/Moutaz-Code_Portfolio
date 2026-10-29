@@ -11,8 +11,6 @@ import CornerFlourish from "../../ui/components/signature/CornerFlourish.astro";
 import CornerSpark from "../../ui/components/signature/CornerSpark.astro";
 import SignatureInit from "../../ui/components/signature/SignatureInit.astro";
 import QuickFacts from "../../ui/components/projects/QuickFacts.astro";
-import Highlights from "../../ui/components/projects/Highlights.astro";
-import Results from "../../ui/components/projects/Results.astro";
 import ItchEmbed from "../../ui/components/integrations/ItchEmbed.astro";
 import ShaderToyEmbed from "../../ui/components/integrations/ShaderToyEmbed.astro";
 
@@ -29,9 +27,7 @@ if (!project) return Astro.redirect("/404");
 
 const {
   title, summary, status, tags, links, media, content, dateStart, dateEnd,
-  role, timeframe, stack, highlights, results,
-  problem, constraints, approach, architecture, challenges, lessons, nextSteps,
-  githubRepo, itchEmbedUrl, shaderToyId,
+  role, timeframe, stack, githubRepo, itchEmbedUrl, shaderToyId,
 } = project;
 
 const { Content } = content;
@@ -42,21 +38,7 @@ const relatedProjects = allProjects
   .filter((p) => p.slug !== slug && p.tags.some((t) => tags.includes(t)))
   .slice(0, 3);
 
-// Determine if we have case study content to show the two-column layout
-const hasQuickFacts = role || timeframe || stack.length > 0 || links.length > 0;
-const hasHighlightsOrResults = highlights.length > 0 || results.length > 0;
-const hasTwoColumnContent = hasQuickFacts || hasHighlightsOrResults;
-
-// Case study sections — array of { title, items } for bullet lists, or { title, text } for paragraphs
-const caseSections = [
-  { title: "Problem", text: problem },
-  { title: "Constraints", items: constraints },
-  { title: "Approach", items: approach },
-  { title: "Architecture", items: architecture },
-  { title: "Challenges", items: challenges },
-  { title: "Lessons Learned", items: lessons },
-  { title: "Next Steps", items: nextSteps },
-].filter((s) => ("text" in s && s.text) || ("items" in s && s.items && s.items.length > 0));
+const hasQuickFacts = Boolean(role || timeframe || stack.length > 0 || links.length > 0);
 ---
 
 <BaseLayout title={title} description={summary} ogImage={project.primaryImage?.src} enableMotion enableSmoothScroll enableAmbient ambientVariant="b" enableCursor enablePageTransitions enableSound>
@@ -88,94 +70,58 @@ const caseSections = [
       </div>
     </div>
 
-    <!-- Two-column: Highlights/Results + Quick Facts -->
-    {
-      hasTwoColumnContent && (
-        <div class:list={[
-          "mb-8",
-          hasQuickFacts && hasHighlightsOrResults ? "lg:grid lg:grid-cols-[1fr_260px] lg:gap-8" : "",
-        ]}>
-          {/* Left: Highlights + Results */}
-          {hasHighlightsOrResults && (
-            <div>
-              <Highlights items={highlights} />
-              <Results items={results} />
+    <!-- Body + Quick Facts sidebar (sidebar shows first on mobile) -->
+    <div class:list={[
+      "mb-8 flex flex-col gap-8",
+      hasQuickFacts && "lg:grid lg:grid-cols-[minmax(0,1fr)_260px]",
+    ]}>
+      <div class="min-w-0">
+        {
+          media.length > 0 && (
+            <div class="mb-8">
+              <MediaGallery items={media} />
             </div>
-          )}
+          )
+        }
 
-          {/* Right: Quick Facts */}
-          {hasQuickFacts && (
-            <div class:list={[hasHighlightsOrResults ? "lg:sticky lg:top-24 lg:self-start" : ""]}>
-              <QuickFacts
-                status={status}
-                role={role}
-                timeframe={timeframe}
-                stack={stack}
-                links={links}
-              />
-            </div>
-          )}
-        </div>
-      )
-    }
+        {itchEmbedUrl && <ItchEmbed src={itchEmbedUrl} title={`${title} on itch.io`} />}
 
-    <!-- Media gallery -->
-    {
-      media.length > 0 && (
-        <div class="mb-8">
-          <MediaGallery items={media} />
-        </div>
-      )
-    }
+        {shaderToyId && <ShaderToyEmbed shaderId={shaderToyId} title={`${title} — ShaderToy`} />}
 
-    <!-- GitHub link -->
-    {
-      githubRepo && (
-        <p class="text-sm text-(--color-text-muted) mb-8">
-          <a
-            href={`https://github.com/${githubRepo}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="hover:text-(--color-accent)"
-          >
-            View on GitHub &rarr;
-          </a>
-        </p>
-      )
-    }
+        <Prose>
+          <Content />
+        </Prose>
 
-    <!-- itch.io embed -->
-    {itchEmbedUrl && <ItchEmbed src={itchEmbedUrl} title={`${title} on itch.io`} />}
+        {
+          githubRepo && (
+            <p class="text-sm text-(--color-text-muted) mt-8">
+              <a
+                href={`https://github.com/${githubRepo}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="hover:text-(--color-accent)"
+              >
+                View on GitHub &rarr;
+              </a>
+            </p>
+          )
+        }
+      </div>
 
-    <!-- ShaderToy embed -->
-    {shaderToyId && <ShaderToyEmbed shaderId={shaderToyId} title={`${title} — ShaderToy`} />}
-
-    <!-- Case study sections -->
-    {
-      caseSections.length > 0 && (
-        <div class="space-y-8 mb-8" data-reveal>
-          {caseSections.map((section) => (
-            <div>
-              <h2 class="text-lg font-semibold mb-3">{section.title}</h2>
-              {"text" in section && section.text ? (
-                <p class="text-sm text-(--color-text-muted)">{section.text}</p>
-              ) : "items" in section && section.items ? (
-                <ul class="space-y-1.5 text-sm list-disc pl-5 text-(--color-text-muted)">
-                  {section.items.map((item: string) => (
-                    <li>{item}</li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      )
-    }
-
-    <!-- MDX body -->
-    <Prose>
-      <Content />
-    </Prose>
+      {
+        hasQuickFacts && (
+          <aside class="order-first lg:order-none lg:sticky lg:top-24 lg:self-start">
+            <QuickFacts
+              status={status}
+              role={role}
+              timeframe={timeframe}
+              stack={stack}
+              links={links}
+            />
+          </aside>
+        )
+      }
+    </div>
 
     <!-- Contact CTA -->
     <div class="mt-10 pt-6 border-t border-(--color-border) text-center" data-pagefind-ignore>

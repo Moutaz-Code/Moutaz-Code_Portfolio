@@ -20,17 +20,9 @@ export type ProjectDetail = ProjectSummary & {
   media: Media[];
   content: RenderedContent;
   role?: string;
+  /** Human-readable range derived from dateStart/dateEnd, e.g. "May 2024 – Present". */
   timeframe?: string;
   stack: string[];
-  highlights: string[];
-  results: string[];
-  problem?: string;
-  constraints: string[];
-  approach: string[];
-  architecture: string[];
-  challenges: string[];
-  lessons: string[];
-  nextSteps: string[];
   githubRepo?: string;
   itchEmbedUrl?: string;
   shaderToyId?: string;
