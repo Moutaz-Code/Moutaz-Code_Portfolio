@@ -2,6 +2,7 @@
 import ResponsiveImage from "./ResponsiveImage.astro";
 
 interface MediaItem {
+  type?: "image" | "gif" | "video";
   src: string;
   alt?: string;
   caption?: string;
@@ -12,44 +13,42 @@ interface Props {
 }
 
 const { items } = Astro.props;
+const single = items.length === 1;
+const mediaClass = "rounded-lg border border-(--color-border) w-full";
 ---
 
-{
-  items.length === 1 && (
+<div class:list={[!single && "grid gap-4 sm:grid-cols-2"]}>
+  {items.map((item) => (
     <figure class="m-0">
-      <ResponsiveImage
-        src={items[0].src}
-        alt={items[0].alt ?? ""}
-        variant="gallery"
-        class="rounded-lg border border-(--color-border) w-full"
-      />
-      {items[0].caption && (
-        <figcaption class="mt-2 text-sm text-(--color-text-muted) text-center">
-          {items[0].caption}
+      {item.type === "video" ? (
+        <video
+          src={item.src}
+          class={mediaClass}
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          aria-label={item.alt || undefined}
+        />
+      ) : (
+        <ResponsiveImage
+          src={item.src}
+          alt={item.alt ?? ""}
+          variant="gallery"
+          class={mediaClass}
+        />
+      )}
+      {item.caption && (
+        <figcaption
+          class:list={[
+            "text-(--color-text-muted) text-center",
+            single ? "mt-2 text-sm" : "mt-1 text-xs",
+          ]}
+        >
+          {item.caption}
         </figcaption>
       )}
     </figure>
-  )
-}
-
-{
-  items.length >= 2 && (
-    <div class="grid gap-4 sm:grid-cols-2">
-      {items.map((item) => (
-        <figure class="m-0">
-          <ResponsiveImage
-            src={item.src}
-            alt={item.alt ?? ""}
-            variant="gallery"
-            class="rounded-lg border border-(--color-border) w-full"
-          />
-          {item.caption && (
-            <figcaption class="mt-1 text-xs text-(--color-text-muted) text-center">
-              {item.caption}
-            </figcaption>
-          )}
-        </figure>
-      ))}
-    </div>
-  )
-}
+  ))}
+</div>

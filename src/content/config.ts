@@ -6,45 +6,21 @@ const linkSchema = z.object({
 });
 
 const mediaSchema = z.object({
-  type: z.enum(["image", "gif", "video", "embed"]).default("image"),
+  type: z.enum(["image", "gif", "video"]).default("image"),
   src: z.string().min(1),
   alt: z.string().optional(),
   caption: z.string().optional(),
 });
 
-const quickFactsSchema = z.object({
-  role: z.string().optional(),
-  timeframe: z.string().optional(),
-  stack: z.array(z.string()).default([]),
-}).default({});
+/** Treat "" (left blank in frontmatter) as "not set". */
+const blankToUndefined = (v: unknown) =>
+  typeof v === "string" && v.trim() === "" ? undefined : v;
 
-const caseStudySchema = z.object({
-  highlights: z.array(z.string()).default([]),
-  results: z.array(z.string()).default([]),
-  problem: z.string().optional(),
-  constraints: z.array(z.string()).default([]),
-  approach: z.array(z.string()).default([]),
-  architecture: z.array(z.string()).default([]),
-  challenges: z.array(z.string()).default([]),
-  lessons: z.array(z.string()).default([]),
-  nextSteps: z.array(z.string()).default([]),
-}).default({});
-
-const integrationsSchema = z.object({
-  githubRepo: z.preprocess(
-    (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
-    z.string().optional(),
-  ),
-  itchEmbedUrl: z.preprocess(
-    (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
-    z.string().url().optional(),
-  ),
-  shaderToyId: z.preprocess(
-    (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
-    z.string().min(1).optional(),
-  ),
-}).default({});
-
+/**
+ * Projects. Only `title` is required; everything else is optional.
+ * Write the case study itself as Markdown in the body, not in frontmatter.
+ * See docs/templates/ for copy-paste starters.
+ */
 const projects = defineCollection({
   type: "content",
   schema: z
@@ -52,53 +28,24 @@ const projects = defineCollection({
       title: z.string().min(1),
       summary: z.string().default(""),
       tags: z.array(z.string().min(1)).default([]),
-      status: z.enum(["ongoing", "completed", "coming-soon"]).default("ongoing"),
+      status: z.enum(["ongoing", "completed", "coming-soon"]).default("completed"),
       featured: z.boolean().default(false),
-
-      slug: z.string().min(1).optional(),
 
       dateStart: z.coerce.date().optional(),
       dateEnd: z.coerce.date().optional(),
 
+      role: z.preprocess(blankToUndefined, z.string().optional()),
+      stack: z.array(z.string()).default([]),
+
       links: z.array(linkSchema).default([]),
       media: z.array(mediaSchema).default([]),
 
-      // Grouped CMS objects (new editor UX)
-      quickFacts: quickFactsSchema.optional(),
-      caseStudy: caseStudySchema.optional(),
-      integrations: integrationsSchema.optional(),
-
-      // Flat fields kept for backward compatibility
-      role: z.string().optional(),
-      timeframe: z.string().optional(),
-      stack: z.array(z.string()).default([]),
-      highlights: z.array(z.string()).default([]),
-      results: z.array(z.string()).default([]),
-      problem: z.string().optional(),
-      constraints: z.array(z.string()).default([]),
-      approach: z.array(z.string()).default([]),
-      architecture: z.array(z.string()).default([]),
-      challenges: z.array(z.string()).default([]),
-      lessons: z.array(z.string()).default([]),
-      nextSteps: z.array(z.string()).default([]),
-
-      // GitHub integration (optional — format: "owner/repo")
-      githubRepo: z.preprocess(
-        (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
-        z.string().optional(),
-      ),
-
-      // itch.io embed (optional — full iframe src URL)
-      itchEmbedUrl: z.preprocess(
-        (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
-        z.string().url().optional(),
-      ),
-
-      // ShaderToy embed (optional — just the shader ID)
-      shaderToyId: z.preprocess(
-        (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
-        z.string().min(1).optional(),
-      ),
+      /** iframe src from itch.io (Edit game → Distribute → Embed game), e.g. https://itch.io/embed/12345 */
+      itchEmbedUrl: z.preprocess(blankToUndefined, z.string().url().optional()),
+      /** ShaderToy shader ID, e.g. "XsXXDn" from shadertoy.com/view/XsXXDn */
+      shaderToyId: z.preprocess(blankToUndefined, z.string().min(1).optional()),
+      /** "owner/repo" — renders a "View on GitHub" link */
+      githubRepo: z.preprocess(blankToUndefined, z.string().optional()),
     })
     .refine(
       (d) => !(d.dateStart && d.dateEnd) || d.dateEnd >= d.dateStart,

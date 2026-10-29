@@ -1,18 +1,21 @@
 ---
+import type { ProjectStatus } from "../../../domain/models/Project";
+
 interface Props {
-  status: "ongoing" | "completed";
+  status: ProjectStatus;
 }
 
 const { status } = Astro.props;
+const label = status === "coming-soon" ? "coming soon" : status;
 ---
 
 <span
   class:list={[
     "inline-block text-xs px-2 py-0.5 rounded-full font-medium",
-    status === "ongoing"
-      ? "bg-(--color-status-ongoing-bg) text-(--color-status-ongoing-text)"
-      : "bg-(--color-status-completed-bg) text-(--color-text-muted)",
+    status === "completed"
+      ? "bg-(--color-status-completed-bg) text-(--color-text-muted)"
+      : "bg-(--color-status-ongoing-bg) text-(--color-status-ongoing-text)",
   ]}
 >
-  {status}
+  {label}
 </span>

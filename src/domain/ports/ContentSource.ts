@@ -1,9 +1,10 @@
+import type { ProjectStatus } from "../models/Project";
 import type { ProjectSummary, ProjectDetail } from "../models/view/ProjectView";
 import type { PostSummary, PostDetail } from "../models/view/PostView";
 
 export type ProjectListFilters = {
   tag?: string;
-  status?: "ongoing" | "completed";
+  status?: ProjectStatus;
   featuredOnly?: boolean;
   limit?: number;
   offset?: number;

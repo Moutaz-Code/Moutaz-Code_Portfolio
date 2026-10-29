@@ -27,5 +27,3 @@ pnpm-debug.log*
 tmpclaude-*
 NUL
 
-# GitHub repo metadata cache
-.cache/

@@ -26,6 +26,18 @@ function normalizeSrc(src: string): string {
   return src.startsWith("/") ? src : `/${src}`;
 }
 
+const monthYear = (d: Date) =>
+  d.toLocaleDateString("en-GB", { month: "short", year: "numeric", timeZone: "UTC" });
+
+/** "May 2024 – Present", "Oct 2025 – Jan 2026", or "Mar 2026" for single-month projects. */
+function formatTimeframe(start?: Date, end?: Date, status?: string): string | undefined {
+  if (!start) return end ? monthYear(end) : undefined;
+  const from = monthYear(start);
+  if (!end) return status === "ongoing" ? `${from} – Present` : from;
+  const to = monthYear(end);
+  return from === to ? from : `${from} – ${to}`;
+}
+
 export class MdxContentSource implements ContentSource {
   // ── Projects ────────────────────────────────────────
 
@@ -89,9 +101,6 @@ export class MdxContentSource implements ContentSource {
     if (!entry) return null;
 
     const rendered = await entry.render();
-    const quickFacts = entry.data.quickFacts ?? {};
-    const caseStudy = entry.data.caseStudy ?? {};
-    const integrations = entry.data.integrations ?? {};
     const firstImage = entry.data.media.find(
       (m) => m.type === "image" || m.type === "gif",
     );
@@ -117,21 +126,12 @@ export class MdxContentSource implements ContentSource {
         Content: rendered.Content,
         headings: rendered.headings,
       },
-      role: quickFacts.role ?? entry.data.role,
-      timeframe: quickFacts.timeframe ?? entry.data.timeframe,
-      stack: quickFacts.stack ?? entry.data.stack ?? [],
-      highlights: caseStudy.highlights ?? entry.data.highlights ?? [],
-      results: caseStudy.results ?? entry.data.results ?? [],
-      problem: caseStudy.problem ?? entry.data.problem,
-      constraints: caseStudy.constraints ?? entry.data.constraints ?? [],
-      approach: caseStudy.approach ?? entry.data.approach ?? [],
-      architecture: caseStudy.architecture ?? entry.data.architecture ?? [],
-      challenges: caseStudy.challenges ?? entry.data.challenges ?? [],
-      lessons: caseStudy.lessons ?? entry.data.lessons ?? [],
-      nextSteps: caseStudy.nextSteps ?? entry.data.nextSteps ?? [],
-      githubRepo: integrations.githubRepo ?? entry.data.githubRepo,
-      itchEmbedUrl: integrations.itchEmbedUrl ?? entry.data.itchEmbedUrl,
-      shaderToyId: integrations.shaderToyId ?? entry.data.shaderToyId,
+      role: entry.data.role,
+      timeframe: formatTimeframe(entry.data.dateStart, entry.data.dateEnd, entry.data.status),
+      stack: entry.data.stack,
+      githubRepo: entry.data.githubRepo,
+      itchEmbedUrl: entry.data.itchEmbedUrl,
+      shaderToyId: entry.data.shaderToyId,
     };
   }
 
