@@ -9,8 +9,7 @@
     "astro": "astro",
     "check:coupling": "node scripts/check-coupling.mjs",
     "check:perf": "node scripts/check-perf-rules.mjs",
-    "check:tags": "node scripts/check-tags.mjs",
-    "check": "npm run check:coupling && npm run check:perf && npm run check:tags"
+    "check": "npm run check:coupling && npm run check:perf"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.13",

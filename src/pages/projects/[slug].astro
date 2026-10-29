@@ -1,6 +1,5 @@
 ---
 import { contentSource } from "../../app/content";
-import { repoService } from "../../app/repos";
 import BaseLayout from "../../ui/layouts/BaseLayout.astro";
 import TagChip from "../../ui/components/content/TagChip.astro";
 import StatusBadge from "../../ui/components/content/StatusBadge.astro";
@@ -14,7 +13,6 @@ import SignatureInit from "../../ui/components/signature/SignatureInit.astro";
 import QuickFacts from "../../ui/components/projects/QuickFacts.astro";
 import Highlights from "../../ui/components/projects/Highlights.astro";
 import Results from "../../ui/components/projects/Results.astro";
-import RepoCard from "../../ui/components/integrations/RepoCard.astro";
 import ItchEmbed from "../../ui/components/integrations/ItchEmbed.astro";
 import ShaderToyEmbed from "../../ui/components/integrations/ShaderToyEmbed.astro";
 
@@ -36,7 +34,6 @@ const {
   githubRepo, itchEmbedUrl, shaderToyId,
 } = project;
 
-const repo = githubRepo ? await repoService.getRepo(githubRepo) : null;
 const { Content } = content;
 
 // Related projects: share at least one tag, exclude current, max 3
@@ -131,13 +128,9 @@ const caseSections = [
       )
     }
 
-    <!-- GitHub repo card -->
+    <!-- GitHub link -->
     {
-      repo ? (
-        <div class="mb-8">
-          <RepoCard repo={repo} />
-        </div>
-      ) : githubRepo ? (
+      githubRepo && (
         <p class="text-sm text-(--color-text-muted) mb-8">
           <a
             href={`https://github.com/${githubRepo}`}
@@ -148,7 +141,7 @@ const caseSections = [
             View on GitHub &rarr;
           </a>
         </p>
-      ) : null
+      )
     }
 
     <!-- itch.io embed -->
