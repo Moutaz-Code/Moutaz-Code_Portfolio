@@ -2,7 +2,7 @@ export const profileConfig = {
   name: "Moutaz",
   role: "Technical Artist & Graphics Programmer",
   pitch:
-    "I make games in Unity and spend most of my time on the rendering side: shaders, post-processing, lighting, and whatever it takes to make a scene look the way it should.",
+    "I make games in Unity and spend most of my time on the rendering side: shaders, post-processing, lighting, and whatever it takes to make a scene look the way it should. Outside games I've built a forensics platform, Android apps and web tools.",
   ctas: [
     { label: "View My Projects", href: "/projects", variant: "primary" as const },
     { label: "Resume", href: "/resume", variant: "secondary" as const },
@@ -15,16 +15,16 @@ export const profileConfig = {
       items: ["HLSL", "GLSL", "Shader Graph", "URP & Render Graph", "Post-processing", "Lighting"],
     },
     {
-      group: "Engines",
-      items: ["Unity (URP, HDRP)", "Godot"],
+      group: "Games",
+      items: ["Unity (URP, HDRP)", "C#", "Godot", "Blender"],
     },
     {
-      group: "Languages",
-      items: ["C#", "C++", "Java", "TypeScript"],
+      group: "Software",
+      items: ["C++", "Java", "Python", "TypeScript", "Android", "Astro"],
     },
     {
       group: "Tools",
-      items: ["Git", "Blender", "Astro", "Tailwind CSS"],
+      items: ["Git", "Qt", "Tailwind CSS"],
     },
   ],
   experience: [
