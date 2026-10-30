@@ -1,0 +1,48 @@
+---
+title: Duck Around
+summary: First place at Shift Game Jam 2026. Peek inside suitcases with a magnifying lens. I did the rendering and tech art.
+tags: [game-jam, unity, technical-art, shaders, hlsl, post-processing]
+featured: true
+dateStart: 2026-10-17
+dateEnd: 2026-10-18
+role: Tech art & rendering
+stack: [Unity 6, URP, Shader Graph, HLSL]
+media:
+  - src: /projects/duck-around/cover.webp
+    alt: Title screen of Duck Around, a blue duck on a table in a pink-lit airport baggage hall
+  - type: video
+    src: /projects/duck-around/gameplay.mp4
+    alt: Gameplay montage of searching suitcases on a baggage carousel through a magnifying lens
+  - src: /projects/duck-around/lens.webp
+    alt: The magnifying lens held over a red suitcase, showing a duckling hidden inside
+links:
+  - label: Play on itch.io
+    url: https://verylancer.itch.io/duck-around
+---
+
+Made in two days for Shift Game Jam 2026 with a team of four, on the theme "Festival of Passports". It won first place.
+
+The whole game hangs on one gimmick: you hold up a magnifying lens and see straight through the suitcases on the belt.
+That effect, and most of what's on screen, was my part.
+
+## The lens
+
+It's a stencil trick, so it costs almost nothing:
+
+- The lens renders first (`Geometry-1`) with `ColorMask 0`, so it's invisible, and writes `2` into the stencil buffer wherever it covers the screen.
+- The suitcase exteriors only draw where the stencil is **not** `2`, so they vanish inside the lens.
+- The interiors render after them (`Geometry+1`) and only draw where the stencil **is** `2`, so you only ever see the contents through the glass.
+
+A teammate later built the raised-lens and reveal variants on top of it.
+
+## The look
+
+- **Outline.** Sobel edge detection in a Shader Graph custom function node, run as a full-screen pass. A convolution is far cleaner as a few lines of HLSL than as a node graph.
+- **Posterisation** to flatten the shading into bands that sit well with the outlines.
+- **Procedural sky.** A gradient, a star-generation sub-graph and HLSL cartoon clouds built from ellipse SDFs scattered on a hashed grid.
+- **Decals** on the bags and floor.
+- I modelled the tables and the roof.
+
+## Procedural suitcases
+
+Bags spawn along the conveyor with randomised orientation, colour, contents and decals, so every belt load looks different and you actually have to look.

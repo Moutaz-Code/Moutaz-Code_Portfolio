@@ -1,0 +1,24 @@
+---
+title: Impossible Cube
+summary: A cube whose faces open onto different worlds. Stencil portals in URP, built as game-jam prep.
+tags: [unity, technical-art, shaders, rendering]
+dateStart: 2026-01-01
+role: Solo
+stack: [Unity 2022.3, URP, ShaderLab]
+media:
+  - type: video
+    src: /projects/impossible-cube/cube.mp4
+    alt: A marble-framed cube rotating against a night sky, each face showing a different interior
+  - src: /projects/impossible-cube/cover.webp   # card thumbnail (cards only use images)
+    alt: The impossible cube, one face showing red nested cubes inside
+---
+
+{/* TODO(Moutaz): rough date, and a cleaner capture if you have one (this is a cropped phone recording of the editor). */}
+
+A practice piece before a jam: a hollow cube where each face is a window into its own little world. The worlds live in
+the same space but you can only see each one through its own face.
+
+Each face is a quad with a tiny shader that draws nothing (`Blend Zero One`, `ZWrite Off`) and writes that face's ID
+into the stencil buffer. The contents of each world sit on their own layer, which is removed from the renderer's normal
+opaque pass. A URP Render Objects feature per layer draws them back in with a stencil test of *Equal* against that
+face's ID. Each world only appears through its matching face, at the cost of one extra filtered draw per world.
