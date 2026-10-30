@@ -24,11 +24,11 @@ const mediaClass = "rounded-lg border border-(--color-border) w-full";
         <video
           src={item.src}
           class={mediaClass}
-          autoplay
           muted
           loop
           playsinline
           preload="metadata"
+          data-gallery-video
           aria-label={item.alt || undefined}
         />
       ) : (
@@ -52,3 +52,27 @@ const mediaClass = "rounded-lg border border-(--color-border) w-full";
     </figure>
   ))}
 </div>
+
+<script>
+  // Gallery clips play only while on screen, and never on their own when the
+  // visitor prefers reduced motion (they get native controls instead).
+  import { prefersReducedMotion } from "../../runtime/prefs";
+
+  const videos = document.querySelectorAll<HTMLVideoElement>("video[data-gallery-video]");
+
+  if (prefersReducedMotion()) {
+    videos.forEach((v) => (v.controls = true));
+  } else if (videos.length) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const { target, isIntersecting } of entries) {
+          const v = target as HTMLVideoElement;
+          if (isIntersecting) v.play().catch(() => (v.controls = true));
+          else v.pause();
+        }
+      },
+      { threshold: 0.25 },
+    );
+    videos.forEach((v) => io.observe(v));
+  }
+</script>

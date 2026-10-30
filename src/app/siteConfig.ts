@@ -1,6 +1,6 @@
 export const siteConfig = {
   siteName: "Moutaz",
-  siteTagline: "Software Engineer",
+  siteTagline: "Technical Artist & Graphics Programmer",
   siteUrl: "https://moutaz.vercel.app/",
   defaultOgImage: "/og/default.png",
   twitterHandle: undefined as string | undefined,

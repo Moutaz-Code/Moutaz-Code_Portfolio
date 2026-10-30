@@ -1,11 +1,53 @@
 ---
+import fs from "node:fs";
+import path from "node:path";
 import BaseLayout from "../ui/layouts/BaseLayout.astro";
 import ButtonLink from "../ui/components/primitives/ButtonLink.astro";
+
+// The download buttons only appear once public/resume.pdf exists.
+const hasPdf = fs.existsSync(path.join(process.cwd(), "public", "resume.pdf"));
+
+const highlights = [
+  "First place at Shift Game Jam 2026 with Duck Around (rendering and tech art)",
+  "Best Art Direction at UAE GameMakers with Echoes of Marigold (gameplay programming)",
+  "Built a VR-oriented extraction-horror prototype from concept to playable in eight weeks at Pixoul Gaming",
+  "Shaders and post-processing in HLSL, GLSL and Shader Graph on URP, including Render Graph",
+];
+
+const experience = [
+  {
+    title: "Game Development Mentor",
+    org: "Endless Studios, Abu Dhabi",
+    period: "June 2026 – Present",
+    points: [
+      "Co-mentor around 200 students across four weekly cohorts, teaching game-design fundamentals and problem-solving in Endstar, Endless Studios' educational engine.",
+      "Guide students from first concept to a working game, and keep the classroom tech running.",
+    ],
+  },
+  {
+    title: "Game Development Intern",
+    org: "Pixoul Gaming, Abu Dhabi",
+    period: "Summer 2026",
+    points: [
+      "Designed and built a desktop-first, VR-oriented extraction-horror prototype: seeded runs, physical objectives, spatial stealth and extraction.",
+      "Wrote a deterministic adaptive enemy that responds to the player's routes, sight, sound and repeated tactics, behind testable systems ready for XR hardware.",
+      "Built the modular sci-fi facility and a PSX-style shader and post-processing stack on Unity 6 Render Graph. Covered by 148 automated tests.",
+    ],
+  },
+];
+
+const skills = [
+  ["Graphics", "HLSL, GLSL, Shader Graph, URP & Render Graph, post-processing, lighting"],
+  ["Engines", "Unity (URP, HDRP), Godot"],
+  ["Languages", "C#, C++, Java, TypeScript"],
+  ["Tools", "Git, Blender, Astro, Tailwind CSS"],
+  ["Spoken", "English, Arabic"],
+];
 ---
 
 <BaseLayout
   title="Resume"
-  description="Download my resume or view it online."
+  description="Experience, highlights and skills."
   enableMotion
   enableSmoothScroll
   enableAmbient
@@ -17,74 +59,70 @@ import ButtonLink from "../ui/components/primitives/ButtonLink.astro";
   <section class="py-8">
     <h1 class="text-3xl font-bold tracking-tight mb-2">Resume</h1>
     <p class="text-(--color-text-muted) mb-8">
-      Download a copy of my resume or view the highlights below.
+      {hasPdf ? "Download a copy or read the highlights below." : "The highlights. Full CV on request."}
     </p>
 
-    <div class="flex gap-3 mb-10 flex-wrap">
-      <ButtonLink href="/resume.pdf" variant="primary" magnetic>
-        Download PDF
-      </ButtonLink>
-      <ButtonLink href="/resume.pdf" variant="secondary" external>
-        Open in New Tab
-      </ButtonLink>
-    </div>
+    {hasPdf && (
+      <div class="flex gap-3 mb-10 flex-wrap">
+        <ButtonLink href="/resume.pdf" variant="primary" magnetic>
+          Download PDF
+        </ButtonLink>
+        <ButtonLink href="/resume.pdf" variant="secondary" external>
+          Open in New Tab
+        </ButtonLink>
+      </div>
+    )}
 
-    <!-- Resume Highlights -->
     <div class="mb-10" data-reveal>
       <h2 class="text-xl font-semibold mb-4">Highlights</h2>
       <ul class="space-y-2 text-sm">
-        <li class="flex gap-2">
-          <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-(--color-accent)"></span>
-          <span>Passionate about building polished, performant web experiences</span>
-        </li>
-        <li class="flex gap-2">
-          <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-(--color-accent)"></span>
-          <span>Strong focus on TypeScript, modern frameworks, and clean architecture</span>
-        </li>
-        <li class="flex gap-2">
-          <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-(--color-accent)"></span>
-          <span>Experience with game development using Unity and C#</span>
-        </li>
-        <li class="flex gap-2">
-          <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-(--color-accent)"></span>
-          <span>Comfortable working across the full stack — frontend, backend, and tooling</span>
-        </li>
+        {highlights.map((h) => (
+          <li class="flex gap-2">
+            <span class="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-(--color-accent)"></span>
+            <span>{h}</span>
+          </li>
+        ))}
       </ul>
     </div>
 
-    <!-- Resume sections -->
     <div class="space-y-8">
+      <div>
+        <h2 class="text-xl font-semibold mb-3">Experience</h2>
+        <div class="border-l-2 border-(--color-border) pl-4 space-y-6">
+          {experience.map((job) => (
+            <div>
+              <p class="font-medium">{job.title}</p>
+              <p class="text-sm text-(--color-text-muted)">
+                {job.org} &middot; {job.period}
+              </p>
+              <ul class="mt-2 space-y-1 text-sm text-(--color-text-muted) list-disc pl-5">
+                {job.points.map((p) => <li>{p}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div>
         <h2 class="text-xl font-semibold mb-3">Education</h2>
         <div class="border-l-2 border-(--color-border) pl-4">
-          <p class="font-medium">B.S. Computer Science</p>
+          <p class="font-medium">Bachelor of Engineering in Information Technology</p>
           <p class="text-sm text-(--color-text-muted)">
-            University Name &middot; 2022 – 2026
+            Abu Dhabi University &middot; 2021 – 2026
           </p>
         </div>
       </div>
 
       <div>
-        <h2 class="text-xl font-semibold mb-3">Experience</h2>
-        <div class="border-l-2 border-(--color-border) pl-4 space-y-4">
-          <div>
-            <p class="font-medium">Software Engineering Intern</p>
-            <p class="text-sm text-(--color-text-muted)">
-              Company Name &middot; Summer 2025
-            </p>
-            <p class="text-sm text-(--color-text-muted) mt-1">
-              Worked on internal tooling and API development.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div>
         <h2 class="text-xl font-semibold mb-3">Skills</h2>
-        <p class="text-sm text-(--color-text-muted)">
-          TypeScript, JavaScript, C#, Python, React, Astro, Node.js, Unity,
-          Tailwind CSS, .NET, Git, WebGL
-        </p>
+        <dl class="grid gap-2 text-sm sm:grid-cols-[8rem_1fr]">
+          {skills.map(([k, v]) => (
+            <>
+              <dt class="font-medium">{k}</dt>
+              <dd class="text-(--color-text-muted) mb-2 sm:mb-0">{v}</dd>
+            </>
+          ))}
+        </dl>
       </div>
     </div>
   </section>
