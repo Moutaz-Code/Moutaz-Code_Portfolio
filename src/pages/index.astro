@@ -19,7 +19,7 @@ const latestPosts = await contentSource.listPosts({ limit: 2 });
 const gridProjects = featuredProjects.slice(0, 3);
 ---
 
-<BaseLayout enableMotion enableSmoothScroll enableAmbient enableCursor enablePageTransitions enableSound>
+<BaseLayout enableMotion enableSmoothScroll enableAmbient enableCursor enablePageTransitions>
   <HeroSignature />
   <ProjectConstellation projects={featuredProjects} />
   <SectionDivider variant="wave" class="my-4" />

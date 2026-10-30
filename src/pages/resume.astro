@@ -36,11 +36,24 @@ const experience = [
   },
 ];
 
+const projects = [
+  {
+    title: "HexaSentinal",
+    org: "Graduation project · Technical lead",
+    points: [
+      "An offline digital-forensics platform for secure evidence ingestion, analysis and reporting.",
+      "Local-first architecture with immutable evidence storage, cryptographic hashing and audit logging.",
+      "Processing pipeline for OCR, speech-to-text, indexing and AI-assisted analysis, with integrated reporting.",
+    ],
+  },
+];
+
 const skills = [
   ["Graphics", "HLSL, GLSL, Shader Graph, URP & Render Graph, post-processing, lighting"],
   ["Engines", "Unity (URP, HDRP), Godot"],
-  ["Languages", "C#, C++, Java, TypeScript"],
-  ["Tools", "Git, Blender, Astro, Tailwind CSS"],
+  ["Languages", "C#, C++, Java, Python, TypeScript"],
+  ["Software", "Android, Astro, Qt, Tailwind CSS"],
+  ["Tools", "Git, Blender"],
   ["Spoken", "English, Arabic"],
 ];
 ---
@@ -54,7 +67,6 @@ const skills = [
   ambientVariant="b"
   enableCursor
   enablePageTransitions
-  enableSound
 >
   <section class="py-8">
     <h1 class="text-3xl font-bold tracking-tight mb-2">Resume</h1>
@@ -97,6 +109,21 @@ const skills = [
               </p>
               <ul class="mt-2 space-y-1 text-sm text-(--color-text-muted) list-disc pl-5">
                 {job.points.map((p) => <li>{p}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-xl font-semibold mb-3">Other Projects</h2>
+        <div class="border-l-2 border-(--color-border) pl-4 space-y-6">
+          {projects.map((proj) => (
+            <div>
+              <p class="font-medium">{proj.title}</p>
+              <p class="text-sm text-(--color-text-muted)">{proj.org}</p>
+              <ul class="mt-2 space-y-1 text-sm text-(--color-text-muted) list-disc pl-5">
+                {proj.points.map((p) => <li>{p}</li>)}
               </ul>
             </div>
           ))}

@@ -35,7 +35,6 @@ const channels = [
   enableAmbient
   enableCursor
   enablePageTransitions
-  enableSound
 >
   <section class="py-8">
     <PageHeader
@@ -46,7 +45,7 @@ const channels = [
 
     {siteConfig.socialLinks.email && (
       <div class="mb-8">
-        <ButtonLink href={siteConfig.socialLinks.email} variant="primary" magnetic sfx="click">
+        <ButtonLink href={siteConfig.socialLinks.email} variant="primary" magnetic>
           Email Me
         </ButtonLink>
       </div>
