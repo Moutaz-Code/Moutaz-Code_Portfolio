@@ -1,0 +1,60 @@
+---
+title: Extraction Horror Prototype
+summary: Eight-week internship at Pixoul Gaming. A VR-oriented extraction-horror game built from concept to playable prototype, with an adaptive enemy and a PSX-style facility.
+tags: [unity, gameplay, ai, technical-art, post-processing, 3d]
+featured: true
+dateStart: 2026-07-06
+dateEnd: 2026-08-28
+role: Solo developer (game development intern)
+stack: [Unity 6, URP, Render Graph, C#, NavMesh, Unity Test Framework]
+media:
+  - src: /projects/extraction-horror/doorway.webp
+    alt: Looking through a sci-fi bulkhead door into a lit lab hall, rendered with a dithered PSX-style look
+  - src: /projects/extraction-horror/lab-hall.webp
+    alt: Lab hall with rows of white consoles under a blue tiled ceiling
+  - src: /projects/extraction-horror/observation-deck.webp
+    alt: Dark facility floor beside large windows looking out onto a purple nebula
+  - src: /projects/extraction-horror/dark-hall.webp
+    alt: Wide dark hall lit by a single amber ceiling light
+---
+
+My internship at Pixoul Gaming, a VR and esports venue in Abu Dhabi. The brief was to design an
+original VR-oriented game and get its central experience playable in eight weeks, built so that VR and the venue's
+physical feedback hardware could be plugged in later.
+
+You're a contractor sent into an abandoned nuclear facility. Find the fuel rods, use a Geiger counter and a three-second
+scan to tell the three live ones from the decoys, carry them back one at a time, survive a twenty-second extraction and get out.
+All of that while the Owl hunts you. It's an entity you can't kill.
+
+## The Owl
+
+The Owl patrols, investigates, pursues, searches and disengages. The interesting part is what it's allowed to know:
+
+- Confirmed sight outranks sound.
+- A sound tells it where something happened, not where you are now.
+- Last-seen and last-heard positions are tracked separately, so hiding after making a noise actually works.
+- It adapts to the routes you keep using, but deterministically and within limits, and it resets every run. No machine learning, no hidden profile of you across runs.
+
+## Readable stealth
+
+The goal for v0.3 was stealth you can reason about without a stealth meter. Visibility comes from three samples on the
+player body (concealed, noticeable, exposed). Detection builds up over time instead of triggering instantly. Crouching,
+walking, sprinting, landing and impacts all make different amounts of noise. Thrown metal objects and machinery panels
+give you distractions. Full cover followed by a quiet relocation is always a valid way out.
+
+## The facility
+
+v0.4 rebuilt the level around readability: an asymmetric three-lobed facility with distinct route choices, landmarks and
+pursuit loops. I drew the floor plan and then built it by hand from modular wall pieces.
+
+For the look, I wrote a PSX-style shader and post-processing stack on Unity 6's Render Graph and lit the facility in URP.
+
+## Engineering
+
+Player, objectives, threat logic, feedback and hardware adapters all sit behind narrow interfaces, so the desktop
+controls can be swapped for XR without touching the core game. Runs are seeded, so a bug or a playtest can be replayed
+exactly. The project shipped with 148 Edit Mode and Play Mode tests and Windows builds.
+
+## What's left
+
+The gameplay loop and the dressed facility in these screenshots haven't been merged yet. That's the first thing I'd do if I pick it back up.

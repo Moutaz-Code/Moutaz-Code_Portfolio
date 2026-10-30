@@ -6,12 +6,10 @@ interface Props {
   class?: string;
   cursorLabel?: string;
   magnetic?: boolean;
-  sfx?: "toggle" | "click";
 }
 
-const { href, variant = "secondary", external = false, class: className, cursorLabel, magnetic = false, sfx } = Astro.props;
+const { href, variant = "secondary", external = false, class: className, cursorLabel, magnetic = false } = Astro.props;
 
-const resolvedSfx = sfx ?? (variant === "primary" ? "click" : undefined);
 
 const variantClasses = {
   primary:
@@ -28,7 +26,6 @@ const variantClasses = {
   data-cursor="button"
   data-cursor-label={cursorLabel}
   data-magnetic={magnetic ? "" : undefined}
-  data-sfx={resolvedSfx}
   class:list={[
     "inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium no-underline transition-colors",
     variantClasses[variant],

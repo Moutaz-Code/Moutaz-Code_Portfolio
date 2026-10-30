@@ -10,8 +10,6 @@ import AmbientInit from "../components/ambient/AmbientInit.astro";
 import CursorLayer from "../components/cursor/CursorLayer.astro";
 import CursorInit from "../components/cursor/CursorInit.astro";
 import PageTransitionInit from "../components/transitions/PageTransitionInit.astro";
-import SoundToggle from "../components/SoundToggle.astro";
-import SoundInit from "../components/SoundInit.astro";
 import SpeedInsights from '@vercel/speed-insights/astro';
 
 interface Props {
@@ -26,7 +24,6 @@ interface Props {
   ambientVariant?: "a" | "b" | "c";
   enableCursor?: boolean;
   enablePageTransitions?: boolean;
-  enableSound?: boolean;
 }
 
 const {
@@ -41,7 +38,6 @@ const {
   ambientVariant = "a",
   enableCursor = false,
   enablePageTransitions = false,
-  enableSound = false,
 } = Astro.props;
 
 const pageTitle = title
@@ -88,16 +84,6 @@ if (siteConfig.socialLinks.shadertoy) {
         if (dark) document.documentElement.classList.add('theme-dark');
       })();
     </script>
-
-    <!-- Sound: apply sound-on class before first paint -->
-    {enableSound && (
-      <script is:inline>
-        (function(){
-          var s = localStorage.getItem('sound');
-          if (s !== 'off') document.documentElement.classList.add('sound-on');
-        })();
-      </script>
-    )}
 
     {enablePageTransitions && (
       <script is:inline>
@@ -173,7 +159,6 @@ if (siteConfig.socialLinks.shadertoy) {
       <div class="flex items-center gap-2 sm:gap-4 w-full sm:w-auto min-w-0">
           <HeaderNav currentPath={currentPath} items={siteConfig.navItems} />
           <div class="flex items-center gap-2 shrink-0">
-            {enableSound && <SoundToggle />}
             <ThemeToggle />
           </div>
         </div>
@@ -220,6 +205,5 @@ if (siteConfig.socialLinks.shadertoy) {
     {enableAmbient && <AmbientInit />}
     {enableCursor && <CursorInit />}
     {enablePageTransitions && <PageTransitionInit />}
-    {enableSound && <SoundInit />}
   </body>
 </html>

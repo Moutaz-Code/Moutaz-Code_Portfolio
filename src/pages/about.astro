@@ -11,7 +11,6 @@ import SignatureInit from "../ui/components/signature/SignatureInit.astro";
   enableAmbient
   enableCursor
   enablePageTransitions
-  enableSound
 >
   <section class="py-8">
     <PageHeader title="About Me" subtitle="A bit about who I am, what I do, and what I'm interested in." enableSignature />
@@ -21,10 +20,11 @@ import SignatureInit from "../ui/components/signature/SignatureInit.astro";
       <div>
         <h2 class="text-xl font-semibold mb-3">What I Do</h2>
         <p class="max-w-2xl text-(--color-text-muted) leading-relaxed">
-          I'm a software engineer who enjoys building things across the stack —
-          from interactive web applications to game prototypes and developer
-          tools. I care about clean architecture, maintainable code, and making
-          software that feels good to use.
+          I'm a game developer from Abu Dhabi, and I've been making games for over
+          three years, mostly in Unity. I'm a programmer first, but the part I
+          enjoy most is rendering: writing shaders, building post-processing
+          stacks, lighting scenes and giving a game a look of its own. When a jam
+          needs it, I'll model the props too.
         </p>
       </div>
 
@@ -32,9 +32,24 @@ import SignatureInit from "../ui/components/signature/SignatureInit.astro";
       <div>
         <h2 class="text-xl font-semibold mb-3">What I'm Interested In</h2>
         <p class="max-w-2xl text-(--color-text-muted) leading-relaxed">
-          Creative coding, game development, graphics programming, systems
-          design, and the intersection of art and technology. I like exploring
-          new frameworks and building things that push my understanding forward.
+          Real-time rendering and stylised looks: dithering, outlines,
+          posterisation, PSX-era graphics, procedural skies. Lately I've been
+          digging into physically based sky rendering and how to make it cheap
+          enough for URP, and building Bezium, a vector-graphics toolkit for
+          Unity that renders to world-space meshes.
+        </p>
+      </div>
+
+      <!-- Beyond Games -->
+      <div>
+        <h2 class="text-xl font-semibold mb-3">Beyond Games</h2>
+        <p class="max-w-2xl text-(--color-text-muted) leading-relaxed">
+          Not everything I build is a game. I was technical lead on HexaSentinal,
+          my graduation project: an offline digital-forensics platform for
+          evidence ingestion, analysis and reporting. I've also written an offline
+          ray tracer in C++ and Qt, a detective game for Android in Java and GLSL,
+          and this site. My degree covered web, cybersecurity, data science and
+          mobile development along the way.
         </p>
       </div>
 
@@ -44,20 +59,23 @@ import SignatureInit from "../ui/components/signature/SignatureInit.astro";
         <div class="flex gap-2 flex-wrap">
           {
             [
-              "TypeScript",
-              "JavaScript",
-              "C#",
-              "Python",
-              "React",
-              "Astro",
-              "Node.js",
               "Unity",
-              "Tailwind CSS",
-              ".NET",
+              "URP",
+              "HDRP",
+              "C#",
+              "HLSL",
+              "GLSL",
+              "Shader Graph",
+              "Render Graph",
+              "C++",
+              "Godot",
+              "Blender",
+              "Java",
+              "Python",
+              "TypeScript",
+              "Astro",
+              "Qt",
               "Git",
-              "WebGL",
-              "VS Code",
-              "Figma",
             ].map((tool) => (
               <span class="inline-block rounded-full border border-(--color-border) px-3 py-1 text-xs font-medium text-(--color-text-muted)">
                 {tool}
@@ -73,9 +91,9 @@ import SignatureInit from "../ui/components/signature/SignatureInit.astro";
       >
         <h2 class="text-lg font-semibold mb-2">Currently</h2>
         <ul class="space-y-1 text-sm text-(--color-text-muted)">
-          <li>Building this portfolio site with Astro + Tailwind</li>
-          <li>Studying computer science</li>
-          <li>Experimenting with shader programming</li>
+          <li>Mentoring game-development students at Endless Studios</li>
+          <li>Building Bezium, a vector-graphics toolkit for Unity</li>
+          <li>Researching a physically based sky for URP</li>
         </ul>
       </div>
     </div>

@@ -41,7 +41,7 @@ show the result before committing.
 src/
   content/          MDX content + config.ts (zod schemas)
   pages/            routes (projects/[slug], blog/[slug], tags/[tag], search, rss.xml…)
-  app/              site/profile config, content + media entry points, tag registry, theme/sound prefs
+  app/              site/profile config, content + media entry points, tag registry, theme prefs
   adapters/         MdxContentSource (the only place, besides config.ts, that imports astro:content)
   domain/           view-model types, tag/slug/url helpers
   ui/

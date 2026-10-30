@@ -1,8 +1,8 @@
 export const profileConfig = {
   name: "Moutaz",
-  role: "Software Engineer",
+  role: "Technical Artist & Graphics Programmer",
   pitch:
-    "I love to build thoughtful software — from full-stack applications and videogames to developer tools. Currently focused on graphics programming and clean architecture.",
+    "I make games in Unity and spend most of my time on the rendering side: shaders, post-processing, lighting, and whatever it takes to make a scene look the way it should. Outside games I've built a forensics platform, Android apps and web tools.",
   ctas: [
     { label: "View My Projects", href: "/projects", variant: "primary" as const },
     { label: "Resume", href: "/resume", variant: "secondary" as const },
@@ -11,36 +11,35 @@ export const profileConfig = {
   // Grouped skills for clarity and easy editing
   skills: [
     {
-      group: "Languages",
-      items: ["TypeScript", "JavaScript", "Python", "C#"]
+      group: "Graphics",
+      items: ["HLSL", "GLSL", "Shader Graph", "URP & Render Graph", "Post-processing", "Lighting"],
     },
     {
-      group: "Frameworks",
-      items: ["HTML", "CSS", "Tailwind CSS", "React", "Astro", "Node.js", "Express"]
+      group: "Games",
+      items: ["Unity (URP, HDRP)", "C#", "Godot", "Blender"],
     },
     {
-      group: "Tools & Platforms",
-      items: ["Git", "VS Code", "Figma", "Vercel"]
+      group: "Software",
+      items: ["C++", "Java", "Python", "TypeScript", "Android", "Astro"],
     },
     {
-      group: "Game & Graphics",
-      items: ["Unity", "WebGL", "Three.js", "Shadertoy"]
+      group: "Tools",
+      items: ["Git", "Qt", "Tailwind CSS"],
     },
-    // Add more groups as needed, e.g. Data Science, DevOps, etc.
   ],
   experience: [
     {
-      title: "IT Support Administrator",
-      org: "Abu Dhabi University",
-      period: "Summer 2025",
+      title: "Game Development Mentor",
+      org: "Endless Studios",
+      period: "2026 – Present",
     },
     {
-      title: "IT Help Desk",
-      org: "Abu Dhabi University",
-      period: "Fall 2024",
+      title: "Game Development Intern",
+      org: "Pixoul Gaming",
+      period: "Summer 2026",
     },
     {
-      title: "B.S. Information Technology",
+      title: "B.Eng. Information Technology",
       org: "Abu Dhabi University",
       period: "2021 – 2026",
     },
