@@ -5,13 +5,14 @@
  */
 interface Range { kind: "range"; name: string; label: string; min: number; max: number; step: number; value: number; digits?: number }
 interface Check { kind: "check"; name: string; label: string }
+interface Segment { kind: "segment"; name: string; label: string; options: string[]; value?: number }
 interface Props {
   id: "outline" | "cube" | "sky";
   title: string;
   from: { label: string; href: string };
   clip: { src: string; poster: string; alt: string };
   hint: string;
-  params: (Range | Check)[];
+  params: (Range | Check | Segment)[];
   index: number;
 }
 const { id, title, from, clip, hint, params, index } = Astro.props;
@@ -38,7 +39,16 @@ const { id, title, from, clip, hint, params, index } = Astro.props;
     <div class="params">
       <p class="label">Live port · WebGL</p>
       {params.map((p) =>
-        p.kind === "range" ? (
+        p.kind === "segment" ? (
+          <fieldset class="seg">
+            <legend>{p.label}</legend>
+            <div class="seg-opts">
+              {p.options.map((o, i) => (
+                <label><input type="radio" name={`${id}-${p.name}`} data-param={p.name} value={i} checked={i === (p.value ?? 0)} /><span>{o}</span></label>
+              ))}
+            </div>
+          </fieldset>
+        ) : p.kind === "range" ? (
           <label class="ctrl">
             <span>{p.label}</span>
             <input type="range" data-param={p.name} data-digits={p.digits ?? 2} min={p.min} max={p.max} step={p.step} value={p.value} />
@@ -82,6 +92,14 @@ const { id, title, from, clip, hint, params, index } = Astro.props;
   .ctrl output { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
   .ctrl input, .check input { accent-color: var(--accent); }
   .ctrl input { width: 100%; min-height: 28px; }
+  .seg { border: 0; margin: 0 0 0.35rem; padding: 0; min-width: 0; }
+  .seg legend { font-size: 0.92rem; padding: 0; margin-bottom: 0.45rem; }
+  .seg-opts { display: flex; flex-wrap: wrap; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: var(--r); background: var(--bg); width: fit-content; }
+  .seg-opts label { position: relative; }
+  .seg-opts input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .seg-opts span { display: inline-flex; align-items: center; min-height: 32px; padding: 0 0.7rem; border-radius: 4px; font: 500 0.7rem/1 var(--mono); font-stretch: 87.5%; letter-spacing: 0.03em; color: var(--muted); }
+  .seg-opts input:checked + span { background: var(--panel-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
+  .seg-opts input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
   .check { display: flex; align-items: center; gap: 0.6rem; font-size: 0.92rem; min-height: 28px; }
   .check input { width: 18px; height: 18px; }
 
