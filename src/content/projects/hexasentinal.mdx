@@ -1,27 +1,68 @@
 ---
 title: HexaSentinal
-summary: "My graduation project. An offline digital-forensics platform for secure evidence ingestion, analysis and reporting."
-tags: [capstone, digital-forensics, cybersecurity, ai]
-status: ongoing
+summary: "My graduation project. An offline, AI-assisted digital-forensics workstation: evidence ingestion, explainable analysis, timelines and reports."
+tags: [capstone, digital-forensics, cybersecurity, ai, csharp, dotnet, software-architecture]
 dateStart: 2025-07-01
-role: Technical lead / software engineer
-# TODO(Moutaz): stack, team size, end date, screenshots and a link to the final report once you have the latest version.
+dateEnd: 2026-06-21
+role: Architecture and lead programming
+stack: [C#, .NET 8, WPF, SQLite, QuestPDF, Ollama, xUnit]
 category: Software
 kind: Capstone
 accent: "#A85A12"
-order: 7
+team: Team of 4
+order: 9
 highlights:
-  - Modular, local-first architecture
-  - Immutable evidence storage with hashing and audit logs
-  - OCR, speech-to-text, indexing and AI-assisted analysis
-  - Integrated reporting
+  - Layered .NET 8 solution behind service interfaces
+  - Ingestion pipeline with SHA-256 and duplicate detection
+  - Explainable keyword risk analysis and timeline reconstruction
+  - Optional local LLM assistant through Ollama
+  - Four PDF report types, generated locally
+media:
+  - src: /projects/hexasentinal/keywords.webp
+    alt: The Keyword Ranking tab, listing flagged terms with risk levels, source file and extracted context
+  - src: /projects/hexasentinal/overview.webp
+    alt: The case overview with an evidence summary table and the case progress log
+  - src: /projects/hexasentinal/timeline.webp
+    alt: The audit log in the timeline reconstruction tab, showing case events with actors and timestamps
+  - src: /projects/hexasentinal/reports.webp
+    alt: The report generation tab with selectable report sections
+  - src: /projects/hexasentinal/assistant.webp
+    alt: The assistant panel explaining how to start a local Ollama server when it is offline
 ---
 
-{/* TODO(Moutaz): expand from the final report. This is only what's on the CV so far. */}
+Forensic tools are good at extracting evidence. What investigators still do by hand is everything after that:
+reviewing findings, reconstructing timelines, correlating artefacts and writing reports. HexaSentinal is a Windows
+workstation for that second half, and it runs **entirely offline**, so evidence never leaves the machine. That makes it
+usable in air-gapped labs where cloud tools are off the table.
 
-HexaSentinal is an offline platform for digital forensics: getting evidence in securely, analysing it and reporting on it.
+It was our graduation capstone at Abu Dhabi University, built by a team of four. I was responsible for the system
+design and architecture, made most of the technical decisions and wrote much of the implementation.
 
-As technical lead I architected it as a modular, local-first system:
+## Architecture
 
-- **Evidence integrity.** Evidence is stored immutably, hashed cryptographically on ingestion, and every action is audit-logged.
-- **Processing pipeline.** OCR, speech-to-text, indexing and AI-assisted analysis run as stages, feeding into integrated reporting.
+A .NET 8 solution split into projects with one job each: the WPF interface, core contracts, domain models,
+persistence, ingestion, analysis, reporting and shared utilities, plus a test project. The interface talks to services
+through interfaces and view models, so it never touches SQL, file storage rules or report generation directly. That
+separation is what let four people work on it at once.
+
+Data lives in a local SQLite database, and each case gets its own folder for evidence and reports.
+
+## The workflow
+
+- **Ingestion.** A pipeline validates the file, computes its SHA-256 hash, copies it into the case's evidence store
+  (keyed by the hash) and writes an audit entry. If the same hash already exists in the case, it warns about a duplicate.
+- **Analysis.** Readable evidence is scanned for forensic keywords, each hit is given a risk level from Low to Critical,
+  and the matched context is kept next to it. The point was **explainability**: an investigator can always see why a file
+  was flagged instead of getting an unexplained alert.
+- **Timeline.** Timestamp patterns are pulled out of evidence with their source file and line, alongside the audit trail
+  of everything done in the case.
+- **Assistant.** If a local Ollama server is running, the assistant builds a case-aware prompt from the case, evidence,
+  analysis results and recent audit entries. If it isn't, the rest of the app works normally and the assistant explains how
+  to start it. An optional model should never be able to break an investigation.
+- **Reports.** Executive, technical, legal and timeline PDFs, generated locally with QuestPDF.
+
+## Scope
+
+It's a capstone, not a production forensic suite, and the report says so plainly. The analysis is strongest on
+text-readable evidence. OCR for images, speech-to-text for audio and full disk-image parsing were designed for but
+left as future work, and the user roles are a foundation rather than enforced access control.

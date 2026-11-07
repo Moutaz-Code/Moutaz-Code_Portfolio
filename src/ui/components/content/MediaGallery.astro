@@ -53,7 +53,9 @@ const mediaClass = "gallery-media";
   .gallery.single { grid-template-columns: minmax(0, 1fr); }
   figure { margin: 0; min-width: 0; }
   figure.lead { grid-column: 1 / -1; }
-  .gallery :global(.gallery-media) { display: block; width: 100%; height: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r); border: 1px solid var(--line); background: var(--panel-2); }
+  .gallery :global(.gallery-media) { display: block; width: 100%; height: auto; border-radius: var(--r); border: 1px solid var(--line); background: var(--panel-2); }
+  .gallery :global(video.gallery-media) { aspect-ratio: 16 / 9; object-fit: cover; }
+  .gallery:not(.single) figure:not(.lead) :global(img.gallery-media) { aspect-ratio: 16 / 9; object-fit: contain; }
   figcaption { margin-top: 0.4rem; color: var(--faint); font-size: 0.85rem; }
   @media (max-width: 640px) { .gallery { grid-template-columns: minmax(0, 1fr); } }
 </style>

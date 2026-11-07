@@ -115,6 +115,9 @@
 .chip[aria-pressed="true"] { border-color: var(--text); background: var(--panel-2); }
 .chip .pip { width: 9px; height: 9px; border-radius: 2px; }
 
+/* Under construction: quiet striped tape. */
+.wip { display: inline-flex; align-items: center; padding: 0.22rem 0.55rem; border-radius: 4px; color: #2b2210; font: 600 0.62rem/1.2 var(--mono); font-stretch: 87.5%; letter-spacing: 0.05em; text-transform: uppercase;
+  background: repeating-linear-gradient(-45deg, #f2c14e 0 7px, #e8b33c 7px 14px); }
 .award { display: inline-block; padding: 0.22rem 0.5rem; border-radius: 4px; background: var(--award); color: var(--award-ink); font: 700 0.75rem/1.2 var(--body); }
 
 /* ── Prose (MDX bodies) ─────────────────────────── */

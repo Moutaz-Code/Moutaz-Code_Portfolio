@@ -48,6 +48,8 @@ const projects = defineCollection({
       highlights: z.array(z.string()).default([]),
       /** lower comes first in the deck and on the projects page */
       order: z.number().default(100),
+      /** still being built: shows a small "under construction" label */
+      wip: z.boolean().default(false),
       /** keep the file but leave it off the site */
       draft: z.boolean().default(false),
 

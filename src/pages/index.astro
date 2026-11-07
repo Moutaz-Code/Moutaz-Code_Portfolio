@@ -19,6 +19,7 @@ const cards = projects.map((p) => ({
   timeframe: p.timeframe,
   stack: p.stack,
   highlights: p.highlights,
+  wip: p.wip,
   cover: p.primaryImage?.src,
   links: p.links,
 }));
@@ -97,7 +98,7 @@ const links = siteConfig.socialLinks;
           <article class="detail" data-detail={p.slug} hidden={i !== 0} aria-live="polite">
             <p class="cat"><span class="pip" style={`background: var(--${p.category.toLowerCase()})`}></span>{p.category}{p.kind && ` · ${p.kind}`}</p>
             <h3>{p.title}</h3>
-            {p.award && <span class="award">{p.award}</span>}
+            {(p.award || p.wip) && <p class="badges">{p.award && <span class="award">{p.award}</span>}{p.wip && <span class="wip">Under construction</span>}</p>}
             <p class="sum">{p.summary}</p>
             <dl>
               {p.role && <><dt>Role</dt><dd>{p.role}</dd></>}
@@ -297,7 +298,7 @@ const links = siteConfig.socialLinks;
   .cat { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--muted); font: 500 0.72rem/1 var(--mono); font-stretch: 87.5%; text-transform: uppercase; letter-spacing: 0.04em; }
   .pip { display: inline-block; width: 9px; height: 9px; border-radius: 2px; flex: none; }
   .detail h3 { font-size: 1.6rem; }
-  .detail .award { align-self: flex-start; }
+  .badges { display: flex; flex-wrap: wrap; gap: 0.4rem; }
   .sum { color: var(--muted); font-size: 0.95rem; line-height: 1.55; }
   .detail dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.35rem 1rem; font-size: 0.9rem; }
   .detail dt { color: var(--faint); }

@@ -20,6 +20,7 @@ export type ProjectSummary = {
   team?: string;
   role?: string;
   highlights: string[];
+  wip: boolean;
   order: number;
   /** Human-readable range derived from dateStart/dateEnd, e.g. "May 2024 – Present". */
   timeframe?: string;
