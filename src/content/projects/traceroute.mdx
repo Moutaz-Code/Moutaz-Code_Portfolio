@@ -4,7 +4,7 @@ summary: "A techno-noir forensic mystery for Android. Java and OpenGL ES 3.0 wit
 tags: [android, java, opengl, glsl, post-processing, game-architecture, mobile]
 dateStart: 2026-05-22
 dateEnd: 2026-06-08
-role: Architecture, rendering and core systems
+role: Architecture, rendering, systems and art
 stack: [Java, Android, OpenGL ES 3.0, SQLite, JUnit]
 category: Games
 kind: Mobile game
@@ -12,10 +12,10 @@ accent: "#4F7A5A"
 team: Team of 3
 order: 4
 highlights:
-  - Base architecture and module structure
-  - OpenGL ES rendering pipeline and room post-process shader
+  - Hand-drew most of the room art on iPad
+  - OpenGL ES renderer and room post-process shader
+  - Base architecture and almost all gameplay systems
   - Room navigation and hotspots from normalised touch input
-  - Evidence, thread, timeline and statement systems
   - Handheld and terminal mechanics, save state in SQLite
 media:
   - src: /projects/traceroute/office.webp
@@ -37,7 +37,7 @@ record gives itself away.
 
 It was built for a university mobile development course by three of us in about three weeks, with a hard rule from
 the start: **Java and Android only. No Unity, no Unreal, no Kotlin.** My two teammates are strong programmers who
-don't come from games, so a lot of my job was turning game-shaped problems into structure they could build on.
+don't come from games, so a lot of my job was turning game-shaped problems into structure they could build on. I wrote the renderer and almost all of the game code and drew most of the art; the XML UI was shared between the three of us.
 
 ## Architecture
 
@@ -50,6 +50,11 @@ A single `GameRuntime` owns the gameplay systems: evidence, investigation thread
 guidance system that works out the next lead. The case itself is authored data in a JSON file, so collecting a piece of
 evidence updates evidence state, which updates threads, which updates the timeline and statements, without any of that
 being hard-coded per clue. Progress is saved to SQLite as a compact key/value table.
+
+## Art
+
+The apartment rooms are hand-drawn. I drew most of them on my iPad: flat, inked illustrations with hard pools of
+light, so the post-process could push the noir mood without fighting the drawing.
 
 ## Rendering
 
