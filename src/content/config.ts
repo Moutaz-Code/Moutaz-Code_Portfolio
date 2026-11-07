@@ -34,6 +34,23 @@ const projects = defineCollection({
       dateStart: z.coerce.date().optional(),
       dateEnd: z.coerce.date().optional(),
 
+      /** Games | Graphics | Software: groups the deck and the projects page */
+      category: z.enum(["Games", "Graphics", "Software"]).default("Games"),
+      /** short type line, e.g. "Game jam", "Internship", "Tool" */
+      kind: z.preprocess(blankToUndefined, z.string().optional()),
+      /** award or result, shown as a label on the card */
+      award: z.preprocess(blankToUndefined, z.string().optional()),
+      /** card frame colour (hex) */
+      accent: z.preprocess(blankToUndefined, z.string().optional()),
+      /** "Team of 4", "Solo"… */
+      team: z.preprocess(blankToUndefined, z.string().optional()),
+      /** 3–5 short lines: what you did. Shown on the card back and in the deck panel. */
+      highlights: z.array(z.string()).default([]),
+      /** lower comes first in the deck and on the projects page */
+      order: z.number().default(100),
+      /** keep the file but leave it off the site */
+      draft: z.boolean().default(false),
+
       role: z.preprocess(blankToUndefined, z.string().optional()),
       stack: z.array(z.string()).default([]),
 

@@ -1,0 +1,94 @@
+---
+/**
+ * One shader: recorded clip + write-up on the left, live WebGL window + parameters on the right.
+ * The window is driven by src/ui/three/shaders.ts, keyed by `id`.
+ */
+interface Range { kind: "range"; name: string; label: string; min: number; max: number; step: number; value: number; digits?: number }
+interface Check { kind: "check"; name: string; label: string }
+interface Props {
+  id: "outline" | "cube" | "sky";
+  title: string;
+  from: { label: string; href: string };
+  clip: { src: string; poster: string; alt: string };
+  hint: string;
+  params: (Range | Check)[];
+  index: number;
+}
+const { id, title, from, clip, hint, params, index } = Astro.props;
+---
+
+<article class="row" data-shader={id} aria-labelledby={`sh-${id}`}>
+  <div class="about">
+    <figure class="clip">
+      <video src={clip.src} poster={clip.poster} muted loop playsinline preload="none" data-clip aria-label={clip.alt}></video>
+      <figcaption class="mono">Recorded in Unity · <a href={from.href}>{from.label}</a></figcaption>
+    </figure>
+    <div class="text">
+      <p class="label">Shader {String(index).padStart(2, "0")}</p>
+      <h3 id={`sh-${id}`}>{title}</h3>
+      <div class="desc"><slot /></div>
+    </div>
+  </div>
+
+  <div class="live">
+    <div class="view" data-view>
+      <span class="tag mono">{hint}</span>
+      <noscript><p class="fallback">The live version needs JavaScript and WebGL.</p></noscript>
+    </div>
+    <div class="params">
+      <p class="label">Live port · WebGL</p>
+      {params.map((p) =>
+        p.kind === "range" ? (
+          <label class="ctrl">
+            <span>{p.label}</span>
+            <input type="range" data-param={p.name} data-digits={p.digits ?? 2} min={p.min} max={p.max} step={p.step} value={p.value} />
+            <output class="mono">{p.value.toFixed(p.digits ?? 2)}</output>
+          </label>
+        ) : (
+          <label class="check">
+            <input type="checkbox" data-param={p.name} />
+            <span>{p.label}</span>
+          </label>
+        ),
+      )}
+    </div>
+  </div>
+</article>
+
+<style>
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.25rem 2.5rem; padding-block: 2.5rem; border-top: 1px solid var(--line); }
+  .row:first-of-type { border-top: 0; padding-top: 0.5rem; }
+  .about { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+  .clip { margin: 0; }
+  .clip video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r-lg); border: 1px solid var(--line); background: #000; }
+  .clip figcaption { margin-top: 0.5rem; color: var(--faint); }
+  .clip figcaption a { color: var(--muted); }
+  .text { display: flex; flex-direction: column; gap: 0.55rem; }
+  .text h3 { font-size: 1.55rem; }
+  .desc { color: var(--muted); display: flex; flex-direction: column; gap: 0.7rem; max-width: 60ch; }
+  .desc :global(code) { font-family: var(--mono); font-size: 0.8em; font-stretch: 87.5%; color: var(--text); }
+  .desc :global(strong) { color: var(--text); font-weight: 650; }
+
+  .live { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); overflow: hidden; align-self: start; }
+  .view { position: relative; aspect-ratio: 4 / 3; background: #0d0b16; touch-action: pan-y; cursor: grab; }
+  .view:active { cursor: grabbing; }
+  .view :global(canvas) { display: block; width: 100%; height: 100%; }
+  .tag { position: absolute; top: 10px; left: 10px; color: #fff; background: rgba(0, 0, 0, 0.55); padding: 0.3rem 0.5rem; border-radius: 4px; pointer-events: none; }
+  .fallback { position: absolute; inset: 0; display: grid; place-items: center; padding: 1.5rem; color: #bbb; text-align: center; }
+  .view[data-live="false"]::after { content: "WebGL isn't available here, so only the clip is shown."; position: absolute; inset: 0; display: grid; place-items: center; padding: 1.5rem; color: #bbb; text-align: center; font-size: 0.9rem; }
+  .params { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem 1.1rem 1.15rem; border-top: 1px solid var(--line); }
+  .params .label { margin-bottom: 0.15rem; }
+  .ctrl { display: grid; grid-template-columns: 8.5em minmax(0, 1fr) 3.4em; align-items: center; gap: 0.75rem; font-size: 0.92rem; }
+  .ctrl output { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+  .ctrl input, .check input { accent-color: var(--accent); }
+  .ctrl input { width: 100%; min-height: 28px; }
+  .check { display: flex; align-items: center; gap: 0.6rem; font-size: 0.92rem; min-height: 28px; }
+  .check input { width: 18px; height: 18px; }
+
+  @media (max-width: 900px) {
+    .row { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+    .about { display: contents; }
+    .clip { order: 1; } .text { order: 2; } .live { order: 3; }
+  }
+  @media (max-width: 480px) { .ctrl { grid-template-columns: 7em minmax(0, 1fr) 3em; gap: 0.5rem; } }
+</style>

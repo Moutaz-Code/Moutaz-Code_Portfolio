@@ -1,5 +1,5 @@
 export const siteConfig = {
-  siteName: "Moutaz",
+  siteName: "Moutaz Pharaon",
   siteTagline: "Technical Artist & Graphics Programmer",
   siteUrl: "https://moutaz.vercel.app/",
   defaultOgImage: "/og/default.png",
@@ -14,14 +14,10 @@ export const siteConfig = {
   },
 
   navItems: [
-    { label: "Home", href: "/" },
-    { label: "Projects", href: "/projects" },
-    { label: "Blog", href: "/blog" },
-    { label: "Tags", href: "/tags" },
-    { label: "Search", href: "/search" },
-    { label: "About", href: "/about" },
-    { label: "Contact", href: "/contact" },
-    { label: "Resume", href: "/resume" },
+    { label: "Projects", href: "/#projects" },
+    { label: "Shaders", href: "/#shaders" },
+    { label: "About", href: "/#about" },
+    { label: "Contact", href: "/#contact" },
   ],
 
   /** When true, unknown tags cause a build warning via check:tags. */

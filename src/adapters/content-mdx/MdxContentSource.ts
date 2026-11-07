@@ -1,4 +1,4 @@
-import { getCollection } from "astro:content";
+import { getCollection, type CollectionEntry } from "astro:content";
 import type {
   ContentSource,
   ProjectListFilters,
@@ -38,30 +38,41 @@ function formatTimeframe(start?: Date, end?: Date, status?: string): string | un
   return from === to ? from : `${from} – ${to}`;
 }
 
+type ProjectEntry = CollectionEntry<"projects">;
+function toSummary(e: ProjectEntry): ProjectSummary {
+  const d = e.data;
+  const firstImage = d.media.find((m) => m.type === "image" || m.type === "gif");
+  return {
+    title: d.title,
+    slug: toSlug(e.id),
+    summary: d.summary,
+    status: d.status,
+    featured: d.featured,
+    tags: canonicalizeTagArray(d.tags ?? []),
+    primaryImage: firstImage ? { src: normalizeSrc(firstImage.src), alt: firstImage.alt } : undefined,
+    dateStart: d.dateStart,
+    dateEnd: d.dateEnd,
+    category: d.category,
+    kind: d.kind,
+    award: d.award,
+    accent: d.accent,
+    team: d.team,
+    role: d.role,
+    highlights: d.highlights,
+    order: d.order,
+    timeframe: formatTimeframe(d.dateStart, d.dateEnd, d.status),
+    stack: d.stack,
+    links: d.links ?? [],
+  };
+}
+
 export class MdxContentSource implements ContentSource {
   // ── Projects ────────────────────────────────────────
 
   async listProjects(filters?: ProjectListFilters): Promise<ProjectSummary[]> {
     const entries = await getCollection("projects");
 
-    let summaries: ProjectSummary[] = entries.map((e) => {
-      const firstImage = e.data.media.find(
-        (m) => m.type === "image" || m.type === "gif",
-      );
-      return {
-        title: e.data.title,
-        slug: toSlug(e.id),
-        summary: e.data.summary,
-        status: e.data.status,
-        featured: e.data.featured,
-        tags: canonicalizeTagArray(e.data.tags ?? []),
-        primaryImage: firstImage
-          ? { src: normalizeSrc(firstImage.src), alt: firstImage.alt }
-          : undefined,
-        dateStart: e.data.dateStart,
-        dateEnd: e.data.dateEnd,
-      };
-    });
+    let summaries: ProjectSummary[] = entries.filter((e) => !e.data.draft).map((e) => toSummary(e));
 
     // Apply filters
     if (filters?.featuredOnly) {
@@ -74,10 +85,9 @@ export class MdxContentSource implements ContentSource {
       summaries = summaries.filter((p) => p.tags.includes(filters.tag!));
     }
 
-    // Sort: featured first, ongoing before completed, newest dateStart first
+    // Sort: explicit order first, then newest dateStart
     summaries.sort((a, b) => {
-      if (a.featured !== b.featured) return a.featured ? -1 : 1;
-      if (a.status !== b.status) return a.status === "ongoing" ? -1 : 1;
+      if (a.order !== b.order) return a.order - b.order;
       const da = a.dateStart ? a.dateStart.getTime() : 0;
       const db = b.dateStart ? b.dateStart.getTime() : 0;
       return db - da;
@@ -100,35 +110,12 @@ export class MdxContentSource implements ContentSource {
     const entry = entries.find((e) => toSlug(e.id) === slug);
     if (!entry) return null;
 
+    if (entry.data.draft) return null;
     const rendered = await entry.render();
-    const firstImage = entry.data.media.find(
-      (m) => m.type === "image" || m.type === "gif",
-    );
-
     return {
-      title: entry.data.title,
-      slug: toSlug(entry.id),
-      summary: entry.data.summary,
-      status: entry.data.status,
-      featured: entry.data.featured,
-      tags: canonicalizeTagArray(entry.data.tags ?? []),
-      primaryImage: firstImage
-        ? { src: normalizeSrc(firstImage.src), alt: firstImage.alt }
-        : undefined,
-      dateStart: entry.data.dateStart,
-      dateEnd: entry.data.dateEnd,
-      links: entry.data.links ?? [],
-      media: (entry.data.media ?? []).map((m) => ({
-        ...m,
-        src: normalizeSrc(m.src),
-      })),
-      content: {
-        Content: rendered.Content,
-        headings: rendered.headings,
-      },
-      role: entry.data.role,
-      timeframe: formatTimeframe(entry.data.dateStart, entry.data.dateEnd, entry.data.status),
-      stack: entry.data.stack,
+      ...toSummary(entry),
+      media: (entry.data.media ?? []).map((m) => ({ ...m, src: normalizeSrc(m.src) })),
+      content: { Content: rendered.Content, headings: rendered.headings },
       githubRepo: entry.data.githubRepo,
       itchEmbedUrl: entry.data.itchEmbedUrl,
       shaderToyId: entry.data.shaderToyId,

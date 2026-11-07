@@ -1,109 +1,136 @@
 ---
-import { contentSource } from "../../app/content";
 import BaseLayout from "../../ui/layouts/BaseLayout.astro";
-import PageHeader from "../../ui/components/primitives/PageHeader.astro";
-import ProjectCard from "../../ui/components/content/ProjectCard.astro";
-import ProjectsFilterBar from "../../ui/components/content/ProjectsFilterBar.astro";
-import SignatureInit from "../../ui/components/signature/SignatureInit.astro";
-import SectionDivider from "../../ui/components/signature/SectionDivider.astro";
-import DividerInit from "../../ui/components/signature/DividerInit.astro";
+import { contentSource } from "../../app/content";
+import { tagLabel } from "../../domain/rules/tags";
 
-const allProjects = await contentSource.listProjects();
-const allTags = await contentSource.listTags();
-const projectTags = allTags
-  .filter((t) => t.countProjects > 0)
-  .map((t) => ({ slug: t.slug, label: t.label }));
+const projects = await contentSource.listProjects();
+const categories = ["Games", "Graphics", "Software"] as const;
+const tagCounts = new Map<string, number>();
+projects.forEach((p) => p.tags.forEach((t) => tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1)));
+const tags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([t]) => t);
 ---
 
-<BaseLayout
-  title="Projects"
-  description="Selected work, experiments, and ongoing builds."
-  enableMotion
-  enableSmoothScroll
-  enableAmbient
-  ambientVariant="b"
-  enableCursor
-  enablePageTransitions
->
-  <section class="py-8">
-    <PageHeader
-      title="Projects"
-      subtitle="Selected work, experiments, and ongoing builds."
-      enableSignature
-    />
+<BaseLayout title="Projects" description="Games, graphics work and software by Moutaz Pharaon.">
+  <section class="wrap page">
+    <header class="head">
+      <h1>All projects</h1>
+      <p class="muted">Every project with its write-up. Filter by area or tag, or search titles, tools and descriptions.</p>
+    </header>
 
-    <SectionDivider variant="wave" class="mb-6" />
-
-    <ProjectsFilterBar allTags={projectTags} />
-
-    <div id="projects-grid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-reveal data-reveal-stagger="children">
-      {
-        allProjects.map((project) => (
-          <div
-            data-status={project.status}
-            data-tags={project.tags.join(",")}
-            data-filter-item
-          >
-            <ProjectCard
-              title={project.title}
-              slug={project.slug}
-              summary={project.summary}
-              tags={project.tags}
-              status={project.status}
-              featured={project.featured}
-              primaryImage={project.primaryImage}
-            />
-          </div>
-        ))
-      }
+    <div class="controls">
+      <label class="search">
+        <span class="label">Search</span>
+        <input type="search" placeholder="e.g. stencil, Render Graph, jam" data-search autocomplete="off" />
+      </label>
+      <div class="cats" role="group" aria-label="Filter by area">
+        <button type="button" class="chip" data-cat="all" aria-pressed="true">All</button>
+        {categories.map((c) => <button type="button" class="chip" data-cat={c} aria-pressed="false"><span class="pip" style={`background: var(--${c.toLowerCase()})`}></span>{c}</button>)}
+      </div>
+    </div>
+    <div class="tags" role="group" aria-label="Filter by tag">
+      {tags.map((t) => <button type="button" class="tag" data-tag={t} aria-pressed="false">{tagLabel(t)}</button>)}
     </div>
 
-    <p
-      id="empty-state"
-      class="hidden text-(--color-text-muted) text-center py-12"
-    >
-      No projects match these filters.
-    </p>
+    <p class="count mono" aria-live="polite" data-count>{projects.length} projects</p>
+
+    <ul class="grid">
+      {projects.map((p) => (
+        <li
+          data-item
+          data-cat={p.category}
+          data-tags={p.tags.join(" ")}
+          data-text={[p.title, p.summary, p.kind, p.role, ...p.stack, ...p.highlights, ...p.tags.map(tagLabel)].join(" ").toLowerCase()}
+        >
+          <a class="tile" href={`/projects/${p.slug}`}>
+            <div class="thumb" style={`--accent-c: ${p.accent ?? "var(--panel-2)"}`}>
+              {p.primaryImage ? <img src={p.primaryImage.src} alt="" loading="lazy" decoding="async" /> : <span class="initials">{p.title.split(" ").map((w) => w[0]).join("").slice(0, 3)}</span>}
+              {p.award && <span class="award">{p.award}</span>}
+            </div>
+            <div class="info">
+              <p class="cat"><span class="pip" style={`background: var(--${p.category.toLowerCase()})`}></span>{p.category}{p.kind && ` · ${p.kind}`}<span class="when">{p.timeframe}</span></p>
+              <h2>{p.title}</h2>
+              <p class="sum">{p.summary}</p>
+              {p.stack.length > 0 && <p class="stack mono">{p.stack.slice(0, 4).join(" · ")}</p>}
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <p class="empty muted" data-empty hidden>Nothing matches that. <button type="button" class="reset" data-reset>Clear filters</button></p>
   </section>
-  <SignatureInit />
-  <DividerInit />
 </BaseLayout>
 
 <script>
-  const params = new URLSearchParams(window.location.search);
-  const status = params.get("status");
-  const tag = params.get("tag");
+  const items = [...document.querySelectorAll<HTMLElement>("[data-item]")];
+  const search = document.querySelector<HTMLInputElement>("[data-search]")!;
+  const catBtns = [...document.querySelectorAll<HTMLButtonElement>("[data-cat]")].filter((b) => b.tagName === "BUTTON");
+  const tagBtns = [...document.querySelectorAll<HTMLButtonElement>("[data-tag]")];
+  const count = document.querySelector("[data-count]")!;
+  const empty = document.querySelector<HTMLElement>("[data-empty]")!;
+  const params = new URLSearchParams(location.search);
+  let cat = params.get("cat") ?? "all";
+  let tag = params.get("tag");
+  search.value = params.get("q") ?? "";
 
-  if (status || tag) {
-    const items = document.querySelectorAll<HTMLElement>("[data-filter-item]");
-    let visible = 0;
-
-    items.forEach((el) => {
-      const elStatus = el.dataset.status;
-      const elTags = el.dataset.tags?.split(",") ?? [];
-      const matches =
-        (!status || elStatus === status) && (!tag || elTags.includes(tag));
-      if (matches) {
-        visible++;
-      } else {
-        el.style.display = "none";
-      }
-    });
-
-    if (visible === 0) {
-      document.getElementById("empty-state")?.classList.remove("hidden");
+  function apply() {
+    const q = search.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    let n = 0;
+    for (const el of items) {
+      const ok = (cat === "all" || el.dataset.cat === cat)
+        && (!tag || el.dataset.tags!.split(" ").includes(tag))
+        && q.every((w) => el.dataset.text!.includes(w));
+      el.hidden = !ok; if (ok) n++;
     }
-
-    // Update active pills
-    const current = window.location.pathname + window.location.search;
-    document
-      .querySelectorAll<HTMLElement>("[data-pill-href]")
-      .forEach((pill) => {
-        if (pill.dataset.pillHref === current) {
-          pill.setAttribute("data-pill-active", "");
-        } else {
-          pill.removeAttribute("data-pill-active");
-        }
-      });
+    catBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.cat === cat)));
+    tagBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tag === tag)));
+    count.textContent = `${n} ${n === 1 ? "project" : "projects"}`;
+    empty.hidden = n > 0;
+    const u = new URL(location.href);
+    ["cat", "tag", "q"].forEach((k) => u.searchParams.delete(k));
+    if (cat !== "all") u.searchParams.set("cat", cat);
+    if (tag) u.searchParams.set("tag", tag);
+    if (search.value.trim()) u.searchParams.set("q", search.value.trim());
+    history.replaceState(null, "", u);
   }
+  catBtns.forEach((b) => b.addEventListener("click", () => { cat = b.dataset.cat!; apply(); }));
+  tagBtns.forEach((b) => b.addEventListener("click", () => { tag = tag === b.dataset.tag ? null : b.dataset.tag!; apply(); }));
+  search.addEventListener("input", apply);
+  document.querySelector("[data-reset]")!.addEventListener("click", () => { cat = "all"; tag = null; search.value = ""; apply(); });
+  apply();
 </script>
+
+<style>
+  .page { padding-block: 3rem; }
+  .head h1 { font-size: clamp(2.3rem, 6vw, 3.8rem); font-stretch: 118%; font-weight: 800; letter-spacing: -0.025em; }
+  .head p { margin-top: 0.8rem; max-width: 56ch; }
+  .controls { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem 2rem; margin-top: 2.25rem; }
+  .search { display: flex; flex-direction: column; gap: 0.4rem; flex: 1 1 18rem; max-width: 28rem; }
+  .search input { min-height: 44px; padding: 0 0.9rem; border-radius: var(--r); border: 1px solid var(--line-2); background: var(--panel); color: var(--text); font: 400 1rem var(--body); }
+  .search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .cats { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+  .tag { min-height: 32px; padding: 0 0.6rem; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--muted); font: 500 0.66rem/1 var(--mono); font-stretch: 87.5%; cursor: pointer; }
+  .tag:hover { color: var(--text); }
+  .tag[aria-pressed="true"] { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); }
+  .count { color: var(--faint); margin-top: 1.75rem; }
+  .grid { list-style: none; margin: 0.9rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+  .grid li[hidden] { display: none; }
+  .tile { display: flex; flex-direction: column; height: 100%; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); overflow: hidden; color: var(--text); text-decoration: none; transition: border-color 0.15s, transform 0.15s; }
+  .tile:hover { border-color: var(--line-2); transform: translateY(-2px); color: var(--text); }
+  .thumb { position: relative; aspect-ratio: 16 / 10; background: var(--accent-c); border-bottom: 1px solid var(--line); display: grid; place-items: center; overflow: hidden; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .initials { font: 800 2.6rem/1 var(--display); font-stretch: 125%; color: rgba(255, 255, 255, 0.92); }
+  .thumb .award { position: absolute; left: 10px; bottom: 10px; }
+  .info { display: flex; flex-direction: column; gap: 0.55rem; padding: 1rem 1.1rem 1.2rem; flex: 1; }
+  .cat { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); font: 500 0.66rem/1 var(--mono); font-stretch: 87.5%; text-transform: uppercase; letter-spacing: 0.04em; }
+  .cat .when { margin-left: auto; color: var(--faint); text-transform: none; }
+  .pip { display: inline-block; width: 9px; height: 9px; border-radius: 2px; }
+  h2 { font-size: 1.3rem; }
+  .sum { color: var(--muted); font-size: 0.93rem; line-height: 1.5; }
+  .stack { color: var(--faint); margin-top: auto; padding-top: 0.4rem; }
+  .empty { margin-top: 2rem; }
+  .reset { background: none; border: 0; color: var(--accent); font: inherit; text-decoration: underline; cursor: pointer; padding: 0; }
+  @media (max-width: 980px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 620px) { .grid { grid-template-columns: minmax(0, 1fr); } .search { max-width: none; } }
+  @media (prefers-reduced-motion: reduce) { .tile:hover { transform: none; } }
+</style>

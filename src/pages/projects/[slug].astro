@@ -1,174 +1,114 @@
 ---
 import { contentSource } from "../../app/content";
 import BaseLayout from "../../ui/layouts/BaseLayout.astro";
-import TagChip from "../../ui/components/content/TagChip.astro";
-import StatusBadge from "../../ui/components/content/StatusBadge.astro";
 import MediaGallery from "../../ui/components/content/MediaGallery.astro";
-import ProjectCard from "../../ui/components/content/ProjectCard.astro";
 import Prose from "../../ui/components/content/Prose.astro";
-import ButtonLink from "../../ui/components/primitives/ButtonLink.astro";
-import CornerFlourish from "../../ui/components/signature/CornerFlourish.astro";
-import CornerSpark from "../../ui/components/signature/CornerSpark.astro";
-import SignatureInit from "../../ui/components/signature/SignatureInit.astro";
-import QuickFacts from "../../ui/components/projects/QuickFacts.astro";
 import ItchEmbed from "../../ui/components/integrations/ItchEmbed.astro";
 import ShaderToyEmbed from "../../ui/components/integrations/ShaderToyEmbed.astro";
+import { tagLabel } from "../../domain/rules/tags";
 
 export async function getStaticPaths() {
   const projects = await contentSource.listProjects();
-  return projects.map((p) => ({
-    params: { slug: p.slug },
-  }));
+  return projects.map((p) => ({ params: { slug: p.slug } }));
 }
 
 const { slug } = Astro.params;
 const project = await contentSource.getProjectBySlug(slug!);
 if (!project) return Astro.redirect("/404");
 
-const {
-  title, summary, status, tags, links, media, content, dateStart, dateEnd,
-  role, timeframe, stack, githubRepo, itchEmbedUrl, shaderToyId,
-} = project;
-
+const { title, summary, tags, links, media, content, role, team, timeframe, stack, githubRepo, itchEmbedUrl, shaderToyId, category, kind, award, highlights } = project;
 const { Content } = content;
 
-// Related projects: share at least one tag, exclude current, max 3
-const allProjects = await contentSource.listProjects();
-const relatedProjects = allProjects
-  .filter((p) => p.slug !== slug && p.tags.some((t) => tags.includes(t)))
-  .slice(0, 3);
-
-const hasQuickFacts = Boolean(role || timeframe || stack.length > 0 || links.length > 0);
+const all = await contentSource.listProjects();
+const i = all.findIndex((p) => p.slug === slug);
+const prev = all[(i - 1 + all.length) % all.length];
+const next = all[(i + 1) % all.length];
+const allLinks = [...links, ...(githubRepo ? [{ label: "Source on GitHub", url: `https://github.com/${githubRepo}` }] : [])];
 ---
 
-<BaseLayout title={title} description={summary} ogImage={project.primaryImage?.src} enableMotion enableSmoothScroll enableAmbient ambientVariant="b" enableCursor enablePageTransitions>
-  <article class="py-8" data-pagefind-body>
-    <div class="mb-8" data-pagefind-ignore>
-      <a
-        href="/projects"
-        class="text-sm text-(--color-text-muted) hover:text-(--color-accent) no-underline"
-      >
-        &larr; Back to Projects
-      </a>
-    </div>
+<BaseLayout title={title} description={summary} ogImage={project.primaryImage?.src} ogType="article">
+  <article class="wrap page">
+    <a class="back mono" href="/projects">← All projects</a>
 
-    <!-- Header -->
-    <div class="relative">
-      <CornerFlourish position="top-right" />
-      <CornerSpark position="top-right" />
-      <h1 class="text-3xl font-bold tracking-tight mb-3" data-reveal>{title}</h1>
-      <span data-pagefind-meta="type:Project" class="hidden"></span>
-      <span data-pagefind-meta={`tags:${tags.join(",")}`} class="hidden"></span>
+    <header class="head">
+      <p class="cat"><span class="pip" style={`background: var(--${category.toLowerCase()})`}></span>{category}{kind && ` · ${kind}`}</p>
+      <h1>{title}</h1>
+      {award && <span class="award">{award}</span>}
+      <p class="sum">{summary}</p>
+    </header>
 
-      <p class="text-(--color-text-muted) mb-4" data-reveal>{summary}</p>
+    <dl class="facts">
+      {role && <div><dt class="label">Role</dt><dd>{role}</dd></div>}
+      {team && <div><dt class="label">Team</dt><dd>{team}</dd></div>}
+      {timeframe && <div><dt class="label">When</dt><dd>{timeframe}</dd></div>}
+      {stack.length > 0 && <div class="wide"><dt class="label">Stack</dt><dd>{stack.join(", ")}</dd></div>}
+    </dl>
+    {allLinks.length > 0 && (
+      <p class="links">{allLinks.map((l, k) => <a class:list={["btn", k === 0 && "btn-primary"]} href={l.url} rel="noreferrer">{l.label}</a>)}</p>
+    )}
 
-      <div class="flex items-center gap-3 mb-6 flex-wrap">
-        <StatusBadge status={status} />
-        <div class="flex gap-2 flex-wrap">
-          {tags.map((tag) => <TagChip tag={tag} />)}
-        </div>
-      </div>
-    </div>
+    {media.length > 0 && <div class="media"><MediaGallery items={media} /></div>}
 
-    <!-- Body + Quick Facts sidebar (sidebar shows first on mobile) -->
-    <div class:list={[
-      "mb-8 flex flex-col gap-8",
-      hasQuickFacts && "lg:grid lg:grid-cols-[minmax(0,1fr)_260px]",
-    ]}>
-      <div class="min-w-0">
-        {
-          media.length > 0 && (
-            <div class="mb-8">
-              <MediaGallery items={media} />
-            </div>
-          )
-        }
-
+    <div class="body">
+      <div class="main">
         {itchEmbedUrl && <ItchEmbed src={itchEmbedUrl} title={`${title} on itch.io`} />}
-
-        {shaderToyId && <ShaderToyEmbed shaderId={shaderToyId} title={`${title} — ShaderToy`} />}
-
-        <Prose>
-          <Content />
-        </Prose>
-
-        {
-          githubRepo && (
-            <p class="text-sm text-(--color-text-muted) mt-8">
-              <a
-                href={`https://github.com/${githubRepo}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="hover:text-(--color-accent)"
-              >
-                View on GitHub &rarr;
-              </a>
-            </p>
-          )
-        }
+        {shaderToyId && <ShaderToyEmbed shaderId={shaderToyId} title={`${title} on Shadertoy`} />}
+        <Prose><Content /></Prose>
       </div>
-
-      {
-        hasQuickFacts && (
-          <aside class="order-first lg:order-none lg:sticky lg:top-24 lg:self-start">
-            <QuickFacts
-              status={status}
-              role={role}
-              timeframe={timeframe}
-              stack={stack}
-              links={links}
-            />
-          </aside>
-        )
-      }
-    </div>
-
-    <!-- Contact CTA -->
-    <div class="mt-10 pt-6 border-t border-(--color-border) text-center" data-pagefind-ignore>
-      <p class="text-(--color-text-muted) mb-3">Interested in this project?</p>
-      <ButtonLink href="/contact" variant="primary" magnetic>
-        Get in Touch
-      </ButtonLink>
-    </div>
-
-    <!-- Browse more -->
-    <div data-pagefind-ignore>
-    {
-      tags.length > 0 && (
-        <div class="mt-10 pt-6 border-t border-(--color-border)">
-          <p class="text-sm text-(--color-text-muted) mb-3">
-            Browse more with these tags:
-          </p>
-          <div class="flex gap-2 flex-wrap">
-            {tags.map((tag) => (
-              <TagChip tag={tag} href={`/projects?tag=${tag}`} />
-            ))}
+      <aside class="aside">
+        {highlights.length > 0 && (
+          <div class="box">
+            <p class="label">What I did</p>
+            <ul class="hl">{highlights.map((h) => <li>{h}</li>)}</ul>
           </div>
-        </div>
-      )
-    }
-
-    {
-      relatedProjects.length > 0 && (
-        <div class="mt-10 pt-6 border-t border-(--color-border)">
-          <h2 class="text-lg font-semibold mb-4">Related Projects</h2>
-          <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {relatedProjects.map((rp) => (
-              <ProjectCard
-                title={rp.title}
-                slug={rp.slug}
-                summary={rp.summary}
-                tags={rp.tags}
-                status={rp.status}
-                featured={rp.featured}
-                primaryImage={rp.primaryImage}
-              />
-            ))}
+        )}
+        {tags.length > 0 && (
+          <div class="box">
+            <p class="label">Tags</p>
+            <p class="tags">{tags.map((t) => <a class="tag" href={`/projects?tag=${t}`}>{tagLabel(t)}</a>)}</p>
           </div>
-        </div>
-      )
-    }
+        )}
+      </aside>
     </div>
+
+    <nav class="pager" aria-label="More projects">
+      <a href={`/projects/${prev.slug}`}><span class="label">Previous</span><span class="t">{prev.title}</span></a>
+      <a href={`/projects/${next.slug}`} class="nx"><span class="label">Next</span><span class="t">{next.title}</span></a>
+    </nav>
   </article>
-  <SignatureInit />
 </BaseLayout>
+
+<style>
+  .page { padding-block: 2.5rem 3rem; }
+  .back { color: var(--muted); text-decoration: none; display: inline-block; margin-bottom: 2.25rem; }
+  .back:hover { color: var(--text); }
+  .head { display: flex; flex-direction: column; gap: 0.9rem; max-width: 52rem; }
+  .cat { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--muted); font: 500 0.72rem/1 var(--mono); font-stretch: 87.5%; text-transform: uppercase; letter-spacing: 0.04em; }
+  .pip { display: inline-block; width: 9px; height: 9px; border-radius: 2px; }
+  h1 { font-size: clamp(2.3rem, 6vw, 4rem); font-stretch: 118%; font-weight: 800; line-height: 1; letter-spacing: -0.025em; }
+  .award { align-self: flex-start; }
+  .sum { font-size: 1.15rem; color: var(--muted); max-width: 60ch; }
+  .facts { display: flex; flex-wrap: wrap; gap: 1rem 2.5rem; margin: 2rem 0 0; padding: 1.1rem 0; border-block: 1px solid var(--line); }
+  .facts dd { margin: 0.3rem 0 0; font-size: 0.95rem; }
+  .links { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.25rem; }
+  .media { margin-top: 2.25rem; }
+  .body { display: grid; grid-template-columns: minmax(0, 1fr) 17rem; gap: 2rem 4rem; margin-top: 3rem; }
+  .aside { display: flex; flex-direction: column; gap: 1rem; position: sticky; top: 88px; align-self: start; }
+  .box { padding: 1.1rem 1.2rem; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); display: flex; flex-direction: column; gap: 0.7rem; }
+  .hl { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.45rem; font-size: 0.92rem; }
+  .hl li { padding-left: 1rem; position: relative; line-height: 1.45; }
+  .hl li::before { content: ""; position: absolute; left: 0; top: 0.5em; width: 6px; height: 6px; background: var(--accent); }
+  .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .tag { padding: 0.3rem 0.55rem; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); text-decoration: none; font: 500 0.68rem/1.2 var(--mono); font-stretch: 87.5%; }
+  .tag:hover { color: var(--text); border-color: var(--line-2); }
+  .pager { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--line); }
+  .pager a { display: flex; flex-direction: column; gap: 0.35rem; padding: 1rem 1.2rem; border: 1px solid var(--line); border-radius: var(--r-lg); text-decoration: none; color: var(--text); }
+  .pager a:hover { border-color: var(--line-2); background: var(--panel); }
+  .pager .nx { text-align: right; align-items: flex-end; }
+  .pager .t { font: 700 1.1rem/1.2 var(--display); font-stretch: 110%; }
+  @media (max-width: 900px) {
+    .body { grid-template-columns: minmax(0, 1fr); }
+    .aside { position: static; order: -1; }
+  }
+  @media (max-width: 520px) { .pager { grid-template-columns: 1fr; } .pager .nx { text-align: left; align-items: flex-start; } }
+</style>

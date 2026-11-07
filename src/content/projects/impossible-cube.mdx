@@ -1,6 +1,6 @@
 ---
 title: Impossible Cube
-summary: A cube whose faces open onto different worlds. Stencil portals in URP, built as game-jam prep.
+summary: "A hollow cube where every face opens onto a different world. Stencil portals in URP, built as game-jam prep."
 tags: [unity, technical-art, shaders, rendering]
 dateStart: 2026-01-01
 role: Solo
@@ -11,6 +11,16 @@ media:
     alt: A marble-framed cube rotating against a night sky, each face showing a different interior
   - src: /projects/impossible-cube/cover.webp   # card thumbnail (cards only use images)
     alt: The impossible cube, one face showing red nested cubes inside
+category: Graphics
+kind: Experiment
+accent: "#5B4FC4"
+team: Solo
+order: 5
+highlights:
+  - Faces write a stencil ID and draw nothing
+  - Each world drawn by its own Render Objects pass
+  - One extra filtered draw per world
+  - Packaged as a UPM package
 ---
 
 {/* TODO(Moutaz): rough date, and a cleaner capture if you have one (this is a cropped phone recording of the editor). */}

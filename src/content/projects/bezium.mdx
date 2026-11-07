@@ -1,0 +1,42 @@
+---
+title: Bezium
+summary: "A vector-graphics toolkit for Unity. Bezier shapes and paths, styled and tessellated into real meshes for 3D and VR scenes."
+tags: [unity, csharp, tools, vector-graphics, procedural]
+status: ongoing
+dateStart: 2026-06-12
+role: Solo
+stack: [Unity 6, C#, Unity Vector Graphics]
+category: Graphics
+kind: Tool
+accent: "#2A8C8C"
+team: Solo
+order: 6
+highlights:
+  - Shapes and paths as plain serialisable data
+  - Fill and stroke styles with tessellation control
+  - Meshes rebuilt live in the editor
+  - Backend layer over Unity Vector Graphics
+---
+
+Unity's Vector Graphics package can tessellate SVG-style shapes, but it's built around importing SVG files into sprites.
+Bezium is a toolkit for building vector shapes in code and in the inspector, and getting them out as ordinary meshes
+that sit in a 3D scene: UI in VR, diagrams on a wall, motion graphics in world space.
+
+It's early, and this page describes the foundation rather than a finished tool.
+
+## How it's built
+
+- **Core.** Shapes (`BeziumCircle`, `BeziumRectangle`, `BeziumPathShape`) are plain serialisable data that all convert to
+  one path type: a list of `MoveTo`, `LineTo`, `QuadraticTo`, `CubicTo` and `Close` commands. A `BeziumStyle` holds the
+  fill and stroke, and `BeziumTessellationSettings` exposes step distance, chord and tangent deviation, sampling step and
+  pixels per unit.
+- **Backend.** The core never touches the Vector Graphics package directly. A backend converts Bezium paths into
+  `BezierContour`s, builds the shape and scene, tessellates and writes the result into a `Mesh`. Swapping in a different
+  tessellator later only touches this layer.
+- **Runtime.** `BeziumGraphic` is an `[ExecuteAlways]` component on a `MeshFilter` and `MeshRenderer`. It marks its
+  geometry dirty when a property changes and rebuilds the mesh once, so shapes update live in the editor without
+  re-tessellating every frame. A custom inspector sits on top.
+
+## Next
+
+Animation of path parameters, more primitives and a material setup for anti-aliased edges in world space.

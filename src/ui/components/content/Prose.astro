@@ -1,22 +1,6 @@
 ---
-interface Props {
-  class?: string;
-}
-
+interface Props { class?: string }
 const { class: className } = Astro.props;
 ---
 
-<div
-  class:list={[
-    "prose max-w-none prose-zinc dark:prose-invert",
-    "prose-headings:tracking-tight prose-headings:font-bold prose-headings:font-display",
-    "prose-a:text-(--color-accent) prose-a:underline-offset-2",
-    "prose-code:before:content-none prose-code:after:content-none prose-code:bg-(--color-code-bg) prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm",
-    "prose-pre:bg-(--color-code-block-bg) prose-pre:text-(--color-code-block-text) prose-pre:rounded-lg",
-    "prose-blockquote:border-l-(--color-accent) prose-blockquote:text-(--color-text-muted)",
-    "prose-img:rounded-lg",
-    className,
-  ]}
->
-  <slot />
-</div>
+<div class:list={["prose-body", className]}><slot /></div>

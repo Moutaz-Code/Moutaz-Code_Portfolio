@@ -15,19 +15,10 @@ const SRC = new URL("../src", import.meta.url).pathname.replace(/^\/([A-Z]:)/, "
 // Each rule: { pattern, allowed[] (relative to repo root) }
 const RULES = [
   {
-    label: "animejs",
-    pattern: /from\s+["']animejs\//,
-    allowed: ["src/ui/anime/"],
-  },
-  {
-    label: "constellation module",
-    pattern: /["']\.{0,2}\/.*constellation/,
-    allowed: ["src/ui/components/home/", "src/ui/motion/"],
-  },
-  {
-    label: "lenis",
-    pattern: /from\s+["']lenis["']|from\s+["'].*\/lenis["']/,
-    allowed: ["src/ui/scroll/", "src/ui/components/SmoothScrollInit.astro"],
+    // three.js is large; keep it behind the dynamically imported modules in src/ui/three/.
+    label: "three",
+    pattern: /from\s+["']three["']|import\(\s*["']three["']\s*\)/,
+    allowed: ["src/ui/three/"],
   },
 ];
 

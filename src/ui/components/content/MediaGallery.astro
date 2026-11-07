@@ -14,12 +14,12 @@ interface Props {
 
 const { items } = Astro.props;
 const single = items.length === 1;
-const mediaClass = "rounded-lg border border-(--color-border) w-full";
+const mediaClass = "gallery-media";
 ---
 
-<div class:list={[!single && "grid gap-4 sm:grid-cols-2"]}>
-  {items.map((item) => (
-    <figure class="m-0">
+<div class:list={["gallery", single && "single"]}>
+  {items.map((item, i) => (
+    <figure class:list={[i === 0 && items.length > 2 && "lead"]}>
       {item.type === "video" ? (
         <video
           src={item.src}
@@ -40,18 +40,23 @@ const mediaClass = "rounded-lg border border-(--color-border) w-full";
         />
       )}
       {item.caption && (
-        <figcaption
-          class:list={[
-            "text-(--color-text-muted) text-center",
-            single ? "mt-2 text-sm" : "mt-1 text-xs",
-          ]}
-        >
+        <figcaption>
           {item.caption}
         </figcaption>
       )}
     </figure>
   ))}
 </div>
+
+<style>
+  .gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .gallery.single { grid-template-columns: minmax(0, 1fr); }
+  figure { margin: 0; min-width: 0; }
+  figure.lead { grid-column: 1 / -1; }
+  .gallery :global(.gallery-media) { display: block; width: 100%; height: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r); border: 1px solid var(--line); background: var(--panel-2); }
+  figcaption { margin-top: 0.4rem; color: var(--faint); font-size: 0.85rem; }
+  @media (max-width: 640px) { .gallery { grid-template-columns: minmax(0, 1fr); } }
+</style>
 
 <script>
   // Gallery clips play only while on screen, and never on their own when the

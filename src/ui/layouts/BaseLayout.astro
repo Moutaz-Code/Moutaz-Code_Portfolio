@@ -1,16 +1,7 @@
 ---
 import "../../styles/global.css";
 import { siteConfig } from "../../app/siteConfig";
-import HeaderNav from "../components/HeaderNav.astro";
-import ThemeToggle from "../components/ThemeToggle.astro";
-import MotionInit from "../components/MotionInit.astro";
-import SmoothScrollInit from "../components/SmoothScrollInit.astro";
-import AmbientLayer from "../components/ambient/AmbientLayer.astro";
-import AmbientInit from "../components/ambient/AmbientInit.astro";
-import CursorLayer from "../components/cursor/CursorLayer.astro";
-import CursorInit from "../components/cursor/CursorInit.astro";
-import PageTransitionInit from "../components/transitions/PageTransitionInit.astro";
-import SpeedInsights from '@vercel/speed-insights/astro';
+import SpeedInsights from "@vercel/speed-insights/astro";
 
 interface Props {
   title?: string;
@@ -18,192 +9,132 @@ interface Props {
   ogImage?: string;
   ogType?: "website" | "article";
   noIndex?: boolean;
-  enableMotion?: boolean;
-  enableSmoothScroll?: boolean;
-  enableAmbient?: boolean;
-  ambientVariant?: "a" | "b" | "c";
-  enableCursor?: boolean;
-  enablePageTransitions?: boolean;
 }
 
 const {
   title,
-  description = `${siteConfig.siteName} — ${siteConfig.siteTagline}`,
+  description = `${siteConfig.siteName}, ${siteConfig.siteTagline.toLowerCase()} based in Abu Dhabi.`,
   ogImage,
   ogType = "website",
   noIndex = false,
-  enableMotion = false,
-  enableSmoothScroll = false,
-  enableAmbient = false,
-  ambientVariant = "a",
-  enableCursor = false,
-  enablePageTransitions = false,
 } = Astro.props;
 
-const pageTitle = title
-  ? `${title} | ${siteConfig.siteName}`
-  : `${siteConfig.siteName} | ${siteConfig.siteTagline}`;
-
+const pageTitle = title ? `${title} | ${siteConfig.siteName}` : `${siteConfig.siteName} | ${siteConfig.siteTagline}`;
 const siteBase = Astro.site?.href ?? siteConfig.siteUrl;
 const canonicalUrl = new URL(Astro.url.pathname, siteBase).href;
-const resolvedOgImage = new URL(
-  ogImage ?? siteConfig.defaultOgImage,
-  siteBase,
-).href;
-const currentPath = Astro.url.pathname;
-
-const socialEntries: { label: string; url: string; external?: boolean }[] = [];
-if (siteConfig.socialLinks.email) {
-  socialEntries.push({ label: "Email", url: siteConfig.socialLinks.email });
-}
-if (siteConfig.socialLinks.linkedin) {
-  socialEntries.push({ label: "LinkedIn", url: siteConfig.socialLinks.linkedin, external: true });
-}
-if (siteConfig.socialLinks.github) {
-  socialEntries.push({ label: "GitHub", url: siteConfig.socialLinks.github, external: true });
-}
-if (siteConfig.socialLinks.itch) {
-  socialEntries.push({ label: "itch.io", url: siteConfig.socialLinks.itch, external: true });
-}
-if (siteConfig.socialLinks.shadertoy) {
-  socialEntries.push({ label: "Shadertoy", url: siteConfig.socialLinks.shadertoy, external: true });
-}
+const resolvedOgImage = new URL(ogImage ?? siteConfig.defaultOgImage, siteBase).href;
+const isHome = Astro.url.pathname === "/";
+const links = siteConfig.socialLinks;
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <!-- Theme: prevent flash of wrong theme before CSS paints -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <script is:inline>
-      (function(){
-        var t = localStorage.getItem('theme');
-        var dark = t !== 'light';
-        if (dark) document.documentElement.classList.add('theme-dark');
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem("theme"); } catch (e) {}
+        if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", t);
       })();
     </script>
-
-    {enablePageTransitions && (
-      <script is:inline>
-        (function(){
-          if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-            document.documentElement.classList.add('is-entering');
-          }
-        })();
-      </script>
-    )}
-
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Space+Grotesk:wght@500;600;700&display=swap"
-      rel="stylesheet"
-    />
-
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Martian+Mono:wdth,wght@75..112.5,300..600&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <link rel="canonical" href={canonicalUrl} />
-    <meta name="generator" content={Astro.generator} />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     {noIndex && <meta name="robots" content="noindex, nofollow" />}
-
-    <!-- Open Graph -->
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:image" content={resolvedOgImage} />
-
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={resolvedOgImage} />
-    {siteConfig.twitterHandle && (
-      <meta name="twitter:site" content={siteConfig.twitterHandle} />
-    )}
-
-    <!-- RSS -->
-    <link rel="alternate" type="application/rss+xml" title={`${siteConfig.siteName} Blog RSS`} href="/rss.xml" />
   </head>
-  <body class="min-h-screen flex flex-col">
-    <!-- Ambient background layer -->
-    {enableAmbient && <AmbientLayer variant={ambientVariant} />}
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
 
-    <!-- Custom cursor layer -->
-    {enableCursor && <CursorLayer />}
-
-    <!-- Skip to content -->
-    <a
-      href="#main"
-      class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-(--color-accent) focus:text-(--color-accent-contrast) focus:rounded-lg focus:no-underline"
-    >
-      Skip to content
-    </a>
-
-    <!-- Header -->
-    <header class="relative z-10 border-b border-(--color-border)" data-pagefind-ignore>
-      <div
-        class="mx-auto max-w-4xl px-4 sm:px-6 py-3 sm:py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <a
-          href="/"
-          class="text-lg font-semibold no-underline text-(--color-text)"
-        >
-          {siteConfig.siteName}
+    <header class="site-header">
+      <div class="wrap bar">
+        <a class="brand" href="/" aria-label={`${siteConfig.siteName}, home`}>
+          <span class="mark" aria-hidden="true">MP</span>
+          <span class="name">{siteConfig.siteName}</span>
         </a>
-      <div class="flex items-center gap-2 sm:gap-4 w-full sm:w-auto min-w-0">
-          <HeaderNav currentPath={currentPath} items={siteConfig.navItems} />
-          <div class="flex items-center gap-2 shrink-0">
-            <ThemeToggle />
-          </div>
-        </div>
+        <nav aria-label="Main">
+          {siteConfig.navItems.map((item) => <a href={item.href}>{item.label}</a>)}
+          <a href="/projects" class="all" aria-current={Astro.url.pathname.startsWith("/projects") ? "page" : undefined}>All projects</a>
+          <button class="theme" type="button" data-theme-toggle aria-label="Switch between light and dark theme">
+            <span class="when-dark">Light</span><span class="when-light">Dark</span>
+          </button>
+        </nav>
       </div>
     </header>
 
-    <!-- Main content -->
-    <main id="main" class="relative z-10 flex-1 mx-auto w-full max-w-4xl px-4 sm:px-6 py-8 sm:py-12">
+    <main id="main">
       <slot />
     </main>
 
-    <!-- Footer -->
-    <footer class="relative z-10 border-t border-(--color-border)" data-pagefind-ignore>
-      <div
-        class="mx-auto max-w-4xl px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-(--color-text-muted)"
-      >
-        <p>
-          &copy; {new Date().getFullYear()}
-          {siteConfig.siteName}. All rights reserved.
+    <footer class="site-footer">
+      <div class="wrap foot">
+        <p class="mono">© {new Date().getFullYear()} {siteConfig.siteName}</p>
+        <p class="foot-links">
+          <a href={links.github} rel="noreferrer">GitHub</a>
+          <a href={links.linkedin} rel="noreferrer">LinkedIn</a>
+          <a href={links.itch} rel="noreferrer">itch.io</a>
+          <a href={links.shadertoy} rel="noreferrer">Shadertoy</a>
+          {!isHome && <a href="/#contact">Contact</a>}
         </p>
-        <div class="flex flex-wrap items-center gap-y-1 text-xs sm:text-sm">
-          {
-            socialEntries.map((entry, index) => (
-              <>
-                {index > 0 && <span aria-hidden="true" class="mx-2 opacity-40">•</span>}
-                <a
-                  href={entry.url}
-                  {...(entry.external ? { target: "_blank", rel: "noreferrer" } : {})}
-                  class="inline-flex items-center gap-1 no-underline/80 hover:no-underline text-(--color-text-muted) hover:text-(--color-text) transition-colors"
-                >
-                  <span>{entry.label}</span>
-                  {entry.external && <span aria-hidden="true" class="text-[0.72em] opacity-60">↗</span>}
-                </a>
-              </>
-            ))
-          }
-        </div>
       </div>
     </footer>
 
     <SpeedInsights />
-    {enableMotion && <MotionInit />}
-    {enableSmoothScroll && <SmoothScrollInit />}
-    {enableAmbient && <AmbientInit />}
-    {enableCursor && <CursorInit />}
-    {enablePageTransitions && <PageTransitionInit />}
+    <script>
+      document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const next = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+          document.documentElement.setAttribute("data-theme", next);
+          try { localStorage.setItem("theme", next); } catch (e) {}
+          window.dispatchEvent(new CustomEvent("themechange", { detail: next }));
+        });
+      });
+    </script>
   </body>
 </html>
+
+<style>
+  .skip { position: absolute; left: -999px; top: 8px; z-index: 60; background: var(--accent); color: var(--accent-ink); padding: 0.5rem 0.8rem; border-radius: var(--r); }
+  .skip:focus { left: 12px; }
+  .site-header { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 64px; }
+  .brand { display: flex; align-items: center; gap: 0.7rem; color: var(--text); text-decoration: none; }
+  .mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 5px; border: 1.5px solid var(--accent); color: var(--accent); font: 800 0.8rem/1 var(--display); font-stretch: 125%; letter-spacing: 0.02em; }
+  .name { font: 750 1.02rem/1 var(--display); font-stretch: 115%; }
+  nav { display: flex; align-items: center; gap: 0.15rem; }
+  nav a { padding: 0.55rem 0.7rem; color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.92rem; border-radius: var(--r); }
+  nav a:hover, nav a[aria-current="page"] { color: var(--text); }
+  nav .all { color: var(--text); border: 1px solid var(--line-2); margin-left: 0.35rem; }
+  .theme { margin-left: 0.35rem; min-height: 38px; padding: 0 0.7rem; border-radius: var(--r); border: 1px solid var(--line); background: transparent; color: var(--muted); font: 500 0.7rem/1 var(--mono); font-stretch: 87.5%; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; }
+  .theme:hover { color: var(--text); border-color: var(--line-2); }
+  :global([data-theme="light"]) .when-dark, :global([data-theme="dark"]) .when-light { display: none; }
+  @media (max-width: 760px) {
+    .bar { flex-wrap: wrap; padding-block: 0.6rem; min-height: 0; }
+    .name { display: none; }
+    nav { flex: 1; justify-content: flex-end; flex-wrap: wrap; }
+    nav a { padding: 0.5rem 0.45rem; font-size: 0.86rem; }
+    nav a[href="/#contact"] { display: none; }
+  }
+  @media (max-width: 420px) { nav a[href="/#shaders"] { display: none; } }
+  .site-footer { border-top: 1px solid var(--line); margin-top: 2rem; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .foot { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding-block: 2rem; color: var(--faint); }
+  .foot-links { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+  .foot-links a { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+  .foot-links a:hover { color: var(--text); }
+</style>
