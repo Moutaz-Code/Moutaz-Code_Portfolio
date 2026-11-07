@@ -1,6 +1,8 @@
 // Card faces are drawn with Canvas2D and used as plain textures. No per-card shaders.
-export const CW = 500, CH = 700, CR = 30;
-export const ART = { x: 28, y: 96, w: 444, h: 262 };
+// Layout is authored in a 500×700 space and rasterised at RES× for crisp text when the card is large on screen.
+export const CW = 500, CH = 700, RES = 2;
+const CR = 30;
+export const ART = { x: 26, y: 92, w: 448, h: 292 };
 
 export type CardData = {
   slug: string; title: string; category: "Games" | "Graphics" | "Software"; kind?: string;
@@ -11,8 +13,15 @@ export type CardData = {
 const CAT: Record<string, string> = { Games: "#2F7A4B", Graphics: "#2D63B8", Software: "#A85A12" };
 const DISPLAY = '"Archivo", "Arial Narrow", sans-serif';
 const MONO = '"Martian Mono", ui-monospace, monospace';
-
 const tok = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+export function makeCanvas() {
+  const c = document.createElement("canvas");
+  c.width = CW * RES; c.height = CH * RES;
+  const ctx = c.getContext("2d")!;
+  return { c, ctx };
+}
+function begin(ctx: CanvasRenderingContext2D) { ctx.setTransform(RES, 0, 0, RES, 0, 0); ctx.clearRect(0, 0, CW, CH); }
 
 function rr(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath(); ctx.moveTo(x + r, y);
@@ -46,68 +55,28 @@ function pip(ctx: CanvasRenderingContext2D, cat: string, cx: number, cy: number,
   else { ctx.beginPath(); ctx.moveTo(cx - u * 0.25, cy - u * 0.8); ctx.lineTo(cx - u, cy); ctx.lineTo(cx - u * 0.25, cy + u * 0.8); ctx.moveTo(cx + u * 0.25, cy - u * 0.8); ctx.lineTo(cx + u, cy); ctx.lineTo(cx + u * 0.25, cy + u * 0.8); ctx.stroke(); }
 }
 function frame(ctx: CanvasRenderingContext2D, accent: string) {
-  ctx.clearRect(0, 0, CW, CH);
   rr(ctx, 0, 0, CW, CH, CR); ctx.fillStyle = accent; ctx.fill();
-  ctx.save(); rr(ctx, 0, 0, CW, CH, CR); ctx.clip(); dots(ctx, CW, CH, 14, 1.5, "rgba(255,255,255,0.18)"); ctx.restore();
+  ctx.save(); rr(ctx, 0, 0, CW, CH, CR); ctx.clip(); dots(ctx, CW, CH, 14, 1.5, "rgba(255,255,255,0.16)"); ctx.restore();
 }
-function coverFit(ctx: CanvasRenderingContext2D, img: CanvasImageSource & { width: number; height: number }, x: number, y: number, w: number, h: number) {
-  const s = Math.max(w / img.width, h / img.height), sw = w / s, sh = h / s;
-  ctx.drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, x, y, w, h);
+function coverFit(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, w: number, h: number) {
+  const iw = img.naturalWidth, ih = img.naturalHeight;
+  const s = Math.max(w / iw, h / ih), sw = w / s, sh = h / s;
+  ctx.drawImage(img, (iw - sw) / 2, (ih - sh) / 2, sw, sh, x, y, w, h);
 }
-
-export function drawFront(ctx: CanvasRenderingContext2D, d: CardData, img: HTMLImageElement | null) {
-  const panel = tok("--panel"), panel2 = tok("--panel-2"), text = tok("--text"), muted = tok("--muted"), line = tok("--line");
-  frame(ctx, d.accent);
-  const ix = 14, iy = 14, iw = CW - 28, ih = CH - 28;
-  rr(ctx, ix, iy, iw, ih, 20); ctx.fillStyle = panel; ctx.fill();
-
-  ctx.fillStyle = text; ctx.font = `760 34px ${DISPLAY}`;
-  ctx.fillText(fit(ctx, d.title, iw - 100), ix + 22, iy + 54);
-  pip(ctx, d.category, ix + iw - 38, iy + 42, 18);
-
-  ctx.save(); rr(ctx, ART.x, ART.y, ART.w, ART.h, 10); ctx.clip();
-  if (img && img.complete && img.naturalWidth) coverFit(ctx, img, ART.x, ART.y, ART.w, ART.h);
-  else {
-    ctx.fillStyle = panel2; ctx.fillRect(ART.x, ART.y, ART.w, ART.h);
-    ctx.translate(ART.x, ART.y); ctx.globalAlpha = 0.5; dots(ctx, ART.w, ART.h, 18, 2, d.accent); ctx.globalAlpha = 1;
-    ctx.fillStyle = text; ctx.font = `760 46px ${DISPLAY}`; ctx.textAlign = "center";
-    ctx.fillText(d.title.split(" ").map((w) => w[0]).join("").slice(0, 3).toUpperCase(), ART.w / 2, ART.h / 2 + 16);
-    ctx.textAlign = "left";
-  }
-  ctx.restore();
-  rr(ctx, ART.x, ART.y, ART.w, ART.h, 10); ctx.strokeStyle = line; ctx.lineWidth = 2; ctx.stroke();
-
-  if (d.award) {
-    ctx.font = `700 19px ${DISPLAY}`; const tw = ctx.measureText(d.award).width;
-    rr(ctx, ART.x + 12, ART.y + ART.h - 46, tw + 22, 34, 6); ctx.fillStyle = "#F2B53A"; ctx.fill();
-    ctx.fillStyle = "#2B1C00"; ctx.fillText(d.award, ART.x + 23, ART.y + ART.h - 22);
-  }
-
-  if (d.wip) tape(ctx, ART.x + ART.w - 12, ART.y + 12);
-
-  const y = ART.y + ART.h + 40;
-  ctx.fillStyle = muted; ctx.font = `500 15px ${MONO}`;
-  ctx.fillText(`${d.category.toUpperCase()}  ·  ${(d.kind ?? "").toUpperCase()}`, ix + 22, y);
-  ctx.fillStyle = line; ctx.fillRect(ix + 22, y + 16, iw - 44, 2);
-  ctx.fillStyle = text; ctx.font = `400 20px ${DISPLAY}`;
-  wrap(ctx, d.summary, ix + 22, y + 50, iw - 44, 28, 4);
-
-  const fy = iy + ih - 28;
-  ctx.fillStyle = line; ctx.fillRect(ix + 22, fy - 34, iw - 44, 2);
-  ctx.fillStyle = muted; ctx.font = `500 17px ${DISPLAY}`; ctx.fillText(fit(ctx, d.role ?? "", iw - 210), ix + 22, fy);
-  ctx.font = `400 14px ${MONO}`; ctx.textAlign = "right"; ctx.fillText(d.timeframe ?? "", ix + iw - 22, fy); ctx.textAlign = "left";
+function badge(ctx: CanvasRenderingContext2D, text: string, x: number, y: number) {
+  ctx.font = `700 20px ${DISPLAY}`; const tw = ctx.measureText(text).width;
+  rr(ctx, x, y, tw + 24, 36, 6); ctx.fillStyle = "#F2B53A"; ctx.fill();
+  ctx.fillStyle = "#2B1C00"; ctx.fillText(text, x + 12, y + 25);
 }
-
 /** Small striped "under construction" tape, anchored at its top-right corner. */
 function tape(ctx: CanvasRenderingContext2D, right: number, top: number) {
-  const label = "UNDER CONSTRUCTION", band = 22;
+  const label = "UNDER CONSTRUCTION", band = 20;
   ctx.font = `600 13px ${MONO}`;
   const tw = ctx.measureText(label).width, h = 28, w = tw + band * 2 + 20, x = right - w;
   ctx.save(); rr(ctx, x, top, w, h, 5); ctx.clip();
   ctx.fillStyle = "#F2C14E"; ctx.fillRect(x, top, w, h);
   const stripes = (x0: number) => {
-    ctx.save(); ctx.beginPath(); ctx.rect(x0, top, band, h); ctx.clip();
-    ctx.fillStyle = "#2B2210";
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, top, band, h); ctx.clip(); ctx.fillStyle = "#2B2210";
     for (let s = -h; s < band + h; s += 10) { ctx.beginPath(); ctx.moveTo(x0 + s, top + h); ctx.lineTo(x0 + s + 5, top + h); ctx.lineTo(x0 + s + 5 + h, top); ctx.lineTo(x0 + s + h, top); ctx.fill(); }
     ctx.restore();
   };
@@ -116,27 +85,66 @@ function tape(ctx: CanvasRenderingContext2D, right: number, top: number) {
   ctx.restore();
 }
 
+export function drawFront(ctx: CanvasRenderingContext2D, d: CardData, img: HTMLImageElement | null) {
+  begin(ctx);
+  const panel = tok("--panel"), panel2 = tok("--panel-2"), text = tok("--text"), muted = tok("--muted"), line = tok("--line");
+  frame(ctx, d.accent);
+  const ix = 12, iy = 12, iw = CW - 24, ih = CH - 24;
+  rr(ctx, ix, iy, iw, ih, 20); ctx.fillStyle = panel; ctx.fill();
+
+  ctx.fillStyle = text; ctx.font = `780 38px ${DISPLAY}`;
+  ctx.fillText(fit(ctx, d.title, iw - 96), ix + 22, iy + 56);
+  pip(ctx, d.category, ix + iw - 36, iy + 42, 17);
+
+  ctx.save(); rr(ctx, ART.x, ART.y, ART.w, ART.h, 10); ctx.clip();
+  if (img && img.complete && img.naturalWidth) coverFit(ctx, img, ART.x, ART.y, ART.w, ART.h);
+  else {
+    ctx.fillStyle = panel2; ctx.fillRect(ART.x, ART.y, ART.w, ART.h);
+    ctx.translate(ART.x, ART.y); ctx.globalAlpha = 0.45; dots(ctx, ART.w, ART.h, 18, 2, d.accent); ctx.globalAlpha = 1;
+    ctx.fillStyle = muted; ctx.font = `780 56px ${DISPLAY}`; ctx.textAlign = "center";
+    ctx.fillText(d.title.split(" ").map((w) => w[0]).join("").slice(0, 3).toUpperCase(), ART.w / 2, ART.h / 2 + 20);
+    ctx.textAlign = "left";
+  }
+  ctx.restore();
+  rr(ctx, ART.x, ART.y, ART.w, ART.h, 10); ctx.strokeStyle = line; ctx.lineWidth = 2; ctx.stroke();
+  if (d.award) badge(ctx, d.award, ART.x + 12, ART.y + ART.h - 48);
+  if (d.wip) tape(ctx, ART.x + ART.w - 12, ART.y + 12);
+
+  const y = ART.y + ART.h + 42;
+  ctx.fillStyle = muted; ctx.font = `500 15px ${MONO}`;
+  ctx.fillText(`${d.category.toUpperCase()}  ·  ${(d.kind ?? "").toUpperCase()}`, ix + 22, y);
+  ctx.fillStyle = text; ctx.font = `450 23px ${DISPLAY}`;
+  wrap(ctx, d.summary, ix + 22, y + 40, iw - 44, 31, 3);
+
+  const fy = iy + ih - 26;
+  ctx.fillStyle = line; ctx.fillRect(ix + 22, fy - 34, iw - 44, 2);
+  ctx.fillStyle = muted; ctx.font = `550 18px ${DISPLAY}`; ctx.fillText(fit(ctx, d.role ?? "", iw - 230), ix + 22, fy);
+  ctx.font = `400 15px ${MONO}`; ctx.textAlign = "right"; ctx.fillText(d.timeframe ?? "", ix + iw - 22, fy); ctx.textAlign = "left";
+}
+
 export function drawBack(ctx: CanvasRenderingContext2D, d: CardData) {
+  begin(ctx);
   const panel2 = tok("--panel-2"), text = tok("--text"), muted = tok("--muted"), line = tok("--line");
   frame(ctx, d.accent);
-  const ix = 14, iy = 14, iw = CW - 28, ih = CH - 28;
+  const ix = 12, iy = 12, iw = CW - 24, ih = CH - 24;
   rr(ctx, ix, iy, iw, ih, 20); ctx.fillStyle = panel2; ctx.fill();
-  ctx.fillStyle = muted; ctx.font = `500 15px ${MONO}`; ctx.fillText(d.title.toUpperCase(), ix + 26, iy + 48);
-  pip(ctx, d.category, ix + iw - 38, iy + 42, 18);
-  ctx.fillStyle = text; ctx.font = `760 34px ${DISPLAY}`; ctx.fillText("What I did", ix + 26, iy + 98);
-  let y = iy + 150; ctx.font = `400 21px ${DISPLAY}`;
-  for (const t of d.highlights.slice(0, 6)) {
-    ctx.fillStyle = d.accent; ctx.fillRect(ix + 28, y - 13, 8, 8);
-    ctx.fillStyle = text; y = wrap(ctx, t, ix + 50, y, iw - 78, 28, 2) + 12;
+  ctx.fillStyle = muted; ctx.font = `500 15px ${MONO}`; ctx.fillText(fit(ctx, d.title.toUpperCase(), iw - 100), ix + 26, iy + 46);
+  pip(ctx, d.category, ix + iw - 36, iy + 40, 17);
+  ctx.fillStyle = text; ctx.font = `780 38px ${DISPLAY}`; ctx.fillText("What I did", ix + 26, iy + 100);
+  let y = iy + 156; ctx.font = `450 24px ${DISPLAY}`;
+  for (const t of d.highlights.slice(0, 5)) {
+    if (y > iy + ih - 120) break;
+    ctx.fillStyle = d.accent; ctx.fillRect(ix + 28, y - 15, 9, 9);
+    ctx.fillStyle = text; y = wrap(ctx, t, ix + 52, y, iw - 80, 31, 2) + 14;
   }
-  ctx.fillStyle = line; ctx.fillRect(ix + 26, iy + ih - 92, iw - 52, 2);
-  ctx.fillStyle = muted; ctx.font = `400 14px ${MONO}`;
-  ctx.fillText(fit(ctx, d.stack.join("  ·  "), iw - 52), ix + 26, iy + ih - 58);
-  ctx.fillText("click to flip back", ix + 26, iy + ih - 28);
+  ctx.fillStyle = line; ctx.fillRect(ix + 26, iy + ih - 88, iw - 52, 2);
+  ctx.fillStyle = muted; ctx.font = `400 15px ${MONO}`;
+  ctx.fillText(fit(ctx, d.stack.join("  ·  "), iw - 52), ix + 26, iy + ih - 54);
+  ctx.fillText("tap to flip back", ix + 26, iy + ih - 24);
 }
 
 export function drawCover(ctx: CanvasRenderingContext2D) {
-  ctx.clearRect(0, 0, CW, CH);
+  begin(ctx);
   rr(ctx, 0, 0, CW, CH, CR); ctx.fillStyle = "#1E1B24"; ctx.fill();
   ctx.save(); rr(ctx, 0, 0, CW, CH, CR); ctx.clip(); dots(ctx, CW, CH, 14, 1.5, "rgba(255,255,255,0.08)"); ctx.restore();
   rr(ctx, 18, 18, CW - 36, CH - 36, 20); ctx.strokeStyle = "#FFC266"; ctx.lineWidth = 3; ctx.stroke();
@@ -147,6 +155,22 @@ export function drawCover(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.font = `400 15px ${MONO}`; ctx.fillText("MOUTAZ PHARAON", CW / 2, CH - 62); ctx.textAlign = "left";
 }
 
+/** Soft rounded-rect shadow, drawn once and shared by every card. */
+export function drawShadow(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  // shadowBlur works everywhere (ctx.filter doesn't in Safari): draw the shape off-canvas and keep only its shadow.
+  ctx.clearRect(0, 0, w, h);
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.6)"; ctx.shadowBlur = 36; ctx.shadowOffsetX = w * 4;
+  ctx.fillStyle = "#000"; rr(ctx, w * 0.17 - w * 4, h * 0.13, w * 0.66, h * 0.74, 24); ctx.fill();
+  ctx.restore();
+}
+/** Dashed outline that marks where a played card lands. */
+export function drawSlot(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = tok("--line-2"); ctx.lineWidth = 6; ctx.setLineDash([22, 16]);
+  rr(ctx, 6, 6, w - 12, h - 12, 36); ctx.stroke(); ctx.setLineDash([]);
+}
+
 export const fontsReady: Promise<unknown> = document.fonts
-  ? Promise.all([`760 34px ${DISPLAY}`, `400 20px ${DISPLAY}`, `500 15px ${MONO}`, `400 14px ${MONO}`].map((f) => document.fonts.load(f))).catch(() => {})
+  ? Promise.all([`780 38px ${DISPLAY}`, `450 23px ${DISPLAY}`, `500 15px ${MONO}`, `400 15px ${MONO}`].map((f) => document.fonts.load(f))).catch(() => {})
   : Promise.resolve();

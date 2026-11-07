@@ -28,7 +28,7 @@
   --body: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "Martian Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
 
-  --wrap: 1160px;
+  --wrap: 1240px;
   --gutter: max(16px, env(safe-area-inset-left, 0px));
   --gutter-r: max(16px, env(safe-area-inset-right, 0px));
   --r: 6px;
@@ -65,11 +65,11 @@
 
 /* ── Base ───────────────────────────────────────── */
 @layer base {
-  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; scroll-padding-top: 76px; }
+  html { font-size: clamp(16px, 0.35vw + 11.5px, 18px); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; scroll-padding-top: 76px; }
   body {
     margin: 0;
     font-family: var(--body);
-    font-size: 16px;
+    font-size: 1rem;
     line-height: 1.6;
     color: var(--text);
     background: radial-gradient(var(--dot) 1.1px, transparent 1.5px) 0 0 / 24px 24px fixed, var(--bg);

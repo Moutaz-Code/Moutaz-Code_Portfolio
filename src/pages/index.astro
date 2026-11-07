@@ -61,11 +61,11 @@ const links = siteConfig.socialLinks;
   </section>
 
   <!-- Projects -->
-  <section id="projects" class="wrap block" aria-labelledby="projects-h" data-deck>
+  <section id="projects" class="wrap wrap-wide block" aria-labelledby="projects-h" data-deck>
     <header class="block-head">
       <div>
         <h2 id="projects-h">Projects</h2>
-        <p class="muted">Games first, then graphics work and software. Click a card or drag it onto the table, and click it again to flip it.</p>
+        <p class="muted">Games first, then graphics work and software. Pick a card from the hand or drag it onto the table, and tap the card on the table to flip it.</p>
       </div>
       <div class="filters" role="group" aria-label="Filter projects">
         <button type="button" class="chip" data-filter="all" aria-pressed="true">All</button>
@@ -108,8 +108,8 @@ const links = siteConfig.socialLinks;
             </dl>
             {p.highlights.length > 0 && <ul class="hl">{p.highlights.map((h) => <li>{h}</li>)}</ul>}
             <p class="detail-links">
-              <a href={`/projects/${p.slug}`}>Read the write-up</a>
-              {p.links.map((l) => <a href={l.url} rel="noreferrer">{l.label}</a>)}
+              <a class="btn btn-primary" href={`/projects/${p.slug}`}>Read the write-up</a>
+              {p.links.map((l) => <a class="btn" href={l.url} rel="noreferrer">{l.label}</a>)}
             </p>
           </article>
         ))}
@@ -134,13 +134,16 @@ const links = siteConfig.socialLinks;
         clip={{ src: "/projects/duck-around/gameplay.mp4", poster: "/projects/duck-around/lens.webp", alt: "Duck Around gameplay with ink outlines and banded shading" }}
         hint="drag to turn"
         params={[
+          { kind: "segment", name: "view", label: "Show", options: ["Final", "Lit", "Normals", "Edges"] },
+          { kind: "range", name: "split", label: "Before / after", min: 0, max: 1, step: 0.01, value: 0 },
           { kind: "range", name: "bands", label: "Colour bands", min: 2, max: 10, step: 1, value: 4, digits: 0 },
           { kind: "range", name: "line", label: "Line threshold", min: 0.05, max: 1.5, step: 0.01, value: 0.35 },
           { kind: "range", name: "width", label: "Line width", min: 0.5, max: 3, step: 0.1, value: 1.2, digits: 1 },
         ]}
       >
         <p>Duck Around's look is one full-screen pass: Sobel edge detection, then colour banding. In Unity it lives in a Shader Graph custom function node, because a 3×3 convolution is a few lines of HLSL and a tangle of nodes.</p>
-        <p>The port renders its scene twice: view-space normals into one target, lit colour into another. Sobel on the <strong>normals</strong> catches silhouettes and creases that have no contrast in colour; Sobel on <strong>luminance</strong> catches the rest. The colour is quantised to <em>N</em> bands and the edges are inked on top.</p>
+        <p>The port draws the scene twice, once as view-space normals and once lit. Sobel on the <strong>normals</strong> finds silhouettes and creases even where two surfaces have the same colour; Sobel on <strong>luminance</strong> finds the rest. The lit colour is converted to sRGB before banding, so the bands are spaced the way we see brightness rather than in linear light.</p>
+        <p>Switch to <em>Normals</em> or <em>Edges</em> to see the buffers the pass works from, or drag <em>Before / after</em> to compare.</p>
         <p class="mono cost">Cost: one extra scene draw, 18 texture taps per pixel.</p>
       </ShaderRow>
 
@@ -150,12 +153,13 @@ const links = siteConfig.socialLinks;
         clip={{ src: "/projects/impossible-cube/cube.mp4", poster: "/projects/impossible-cube/cover.webp", alt: "The impossible cube rotating in the Unity editor, each face showing a different interior" }}
         hint="drag to turn"
         params={[
-          { kind: "check", name: "masks", label: "Show the stencil masks" },
-          { kind: "range", name: "spin", label: "Spin", min: 0, max: 1, step: 0.01, value: 0.35 },
+          { kind: "segment", name: "view", label: "Show", options: ["Final", "Stencil IDs", "No stencil test"] },
+          { kind: "range", name: "spin", label: "Spin", min: 0, max: 1, step: 0.01, value: 0.3 },
         ]}
       >
-        <p>Each face of the cube is a quad that draws no colour and writes its own ID, 1 to 6, into the stencil buffer. Every world only renders where the stencil equals its ID, so six worlds share the same space and each one is only visible through its own face.</p>
-        <p>In Unity the faces are a ShaderLab shader with <code>ZWrite Off</code> and no colour output, and each world is drawn back in by a URP Render Objects feature with an <em>Equal</em> stencil test. The port uses three.js material stencil state the same way, with back-face culling so the far faces never overwrite the near ones. Tick the box to see the masks.</p>
+        <p>Each face of the cube is a quad that draws no colour and writes its own ID, 1 to 6, into the stencil buffer. Every material in a world only renders where the stencil equals that world's ID, so six worlds share the same space and each one is only visible through its own face.</p>
+        <p>In Unity the faces use a ShaderLab shader with <code>ZWrite Off</code> and no colour output, and each world is drawn back in by a URP Render Objects feature with an <em>Equal</em> stencil test. The port sets the same state on three.js materials, with back-face culling so the far faces never overwrite the near ones.</p>
+        <p><em>Stencil IDs</em> paints what each face writes. <em>No stencil test</em> draws every world everywhere, which is the mess the stencil is there to prevent.</p>
         <p class="mono cost">Cost: one extra filtered draw per world. No render targets.</p>
       </ShaderRow>
 
@@ -165,12 +169,15 @@ const links = siteConfig.socialLinks;
         clip={{ src: "/projects/duck-around/gameplay.mp4", poster: "/projects/duck-around/cover.webp", alt: "Duck Around gameplay under the cartoon sky" }}
         hint="drag to scrub time"
         params={[
-          { kind: "range", name: "time", label: "Time of day", min: 0, max: 1, step: 0.001, value: 0.86 },
+          { kind: "segment", name: "view", label: "Show", options: ["Final", "Cloud SDF", "Grid cells"] },
+          { kind: "range", name: "time", label: "Time of day", min: 0, max: 1, step: 0.001, value: 0.8 },
           { kind: "range", name: "cover", label: "Cloud cover", min: 0, max: 1, step: 0.01, value: 0.5 },
+          { kind: "range", name: "bands", label: "Sky bands", min: 3, max: 32, step: 1, value: 14, digits: 0 },
         ]}
       >
-        <p>A vertical gradient driven by time of day and posterised into bands, stars from a hashed grid, and clouds built from four ellipse SDFs per grid cell. Each cell hashes to a value that's compared against cloud cover, so the slider is just a threshold.</p>
-        <p>The two-tone shading is the same cloud SDF sampled again with a small vertical offset: wherever the shifted sample falls outside the cloud, that pixel gets the lit colour. It reads as a flat shadow band without any lighting.</p>
+        <p>A vertical gradient driven by time of day and posterised into bands, a sun and moon on one arc, stars from a hashed grid, and clouds built from four ellipse SDFs per grid cell. Each cell hashes to a value that's compared against cloud cover, so the slider is just a threshold.</p>
+        <p>The two-tone shading is the same cloud SDF sampled again with a small vertical offset: wherever the shifted sample falls outside the cloud, the pixel gets the lit colour. It reads as a flat shadow band without any lighting.</p>
+        <p><em>Cloud SDF</em> shows the distance field with contour lines; <em>Grid cells</em> shows which cells the cover threshold lets through.</p>
         <p class="mono cost">Cost: two cloud layers, at most two SDF evaluations each.</p>
       </ShaderRow>
     </div>
@@ -285,36 +292,36 @@ const links = siteConfig.socialLinks;
   .filters { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 
   /* Deck */
-  .deck { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; gap: 1.25rem; align-items: start; }
-  .stage { position: relative; height: 600px; border: 1px solid var(--line); border-radius: var(--r-lg); background: color-mix(in srgb, var(--panel) 60%, transparent); overflow: hidden; touch-action: pan-y; outline-offset: -2px; }
+  .wrap-wide { max-width: 1480px; }
+  .deck { display: grid; grid-template-columns: minmax(0, 1fr) clamp(22rem, 27vw, 27rem); gap: 1.25rem; align-items: stretch; }
+  .stage { position: relative; height: clamp(560px, 76vh, 880px); border: 1px solid var(--line); border-radius: var(--r-lg); background: color-mix(in srgb, var(--panel) 55%, transparent); overflow: hidden; touch-action: pan-y; outline-offset: -2px; }
   .stage :global(canvas) { display: block; width: 100%; height: 100%; }
   .stage:global(.dragging) { cursor: grabbing; }
   .stage-col { display: flex; flex-direction: column; gap: 0.9rem; min-width: 0; }
-  .step { min-height: 34px; padding: 0 0.7rem; border-radius: var(--r); border: 1px solid var(--line); background: var(--panel); color: var(--text); font: 500 0.66rem/1 var(--mono); font-stretch: 87.5%; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; white-space: nowrap; }
+  .step { min-height: 40px; padding: 0 0.85rem; border-radius: var(--r); border: 1px solid var(--line); background: var(--panel); color: var(--text); font: 500 0.7rem/1 var(--mono); font-stretch: 87.5%; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; white-space: nowrap; }
   .step:hover { border-color: var(--line-2); }
   .side { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
-  .detail { display: flex; flex-direction: column; gap: 0.75rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); }
+  .detail { display: flex; flex-direction: column; gap: 1rem; padding: 1.6rem 1.6rem 1.75rem; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); }
   .detail[hidden] { display: none; }
-  .cat { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--muted); font: 500 0.72rem/1 var(--mono); font-stretch: 87.5%; text-transform: uppercase; letter-spacing: 0.04em; }
-  .pip { display: inline-block; width: 9px; height: 9px; border-radius: 2px; flex: none; }
-  .detail h3 { font-size: 1.6rem; }
+  .cat { display: inline-flex; align-items: center; gap: 0.55rem; color: var(--muted); font: 500 0.76rem/1 var(--mono); font-stretch: 87.5%; text-transform: uppercase; letter-spacing: 0.04em; }
+  .pip { display: inline-block; width: 10px; height: 10px; border-radius: 2px; flex: none; }
+  .detail h3 { font-size: clamp(1.8rem, 2.2vw, 2.3rem); font-stretch: 115%; }
   .badges { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-  .sum { color: var(--muted); font-size: 0.95rem; line-height: 1.55; }
-  .detail dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.35rem 1rem; font-size: 0.9rem; }
+  .sum { color: var(--text); font-size: 1.08rem; line-height: 1.55; }
+  .detail dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.5rem 1.1rem; font-size: 0.98rem; padding-block: 0.9rem; border-block: 1px solid var(--line); }
   .detail dt { color: var(--faint); }
   .detail dd { margin: 0; }
-  .detail dd.mono { padding-top: 0.15rem; }
-  .hl { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.92rem; border-top: 1px solid var(--line); padding-top: 0.8rem; }
-  .hl li { padding-left: 1rem; position: relative; line-height: 1.45; }
-  .hl li::before { content: ""; position: absolute; left: 0; top: 0.5em; width: 6px; height: 6px; background: var(--line-2); }
-  .detail-links { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; font-weight: 600; font-size: 0.92rem; }
+  .hl { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.55rem; font-size: 1rem; }
+  .hl li { padding-left: 1.1rem; position: relative; line-height: 1.45; color: var(--muted); }
+  .hl li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 6px; height: 6px; background: var(--accent); }
+  .detail-links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
   .index { display: flex; align-items: flex-start; gap: 0.75rem 1rem; }
   .steps { display: flex; gap: 6px; flex: none; }
   .index ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
   .index li[hidden] { display: none; }
-  .index a[data-pick] { display: inline-flex; align-items: center; gap: 0.45rem; min-height: 34px; padding: 0 0.65rem; border: 1px solid var(--line); border-radius: var(--r); color: var(--muted); text-decoration: none; font-size: 0.85rem; font-weight: 550; white-space: nowrap; }
+  .index a[data-pick] { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 40px; padding: 0 0.8rem; border: 1px solid var(--line); border-radius: var(--r); color: var(--muted); text-decoration: none; font-size: 0.92rem; font-weight: 550; white-space: nowrap; }
   .index a[data-pick]:hover { color: var(--text); border-color: var(--line-2); }
-  .index a[aria-current="true"] { color: var(--text); border-color: var(--text); }
+  .index a[aria-current="true"] { color: var(--text); border-color: var(--text); background: var(--panel); }
   .all-link { font-size: 0.9rem; font-weight: 600; padding: 0.25rem 0.1rem; }
 
   /* Shaders */
@@ -345,10 +352,12 @@ const links = siteConfig.socialLinks;
     .intro { grid-template-columns: minmax(0, 1fr); padding-block: 3.5rem 3rem; align-items: start; }
     .now { max-width: 34rem; }
     .deck { grid-template-columns: minmax(0, 1fr); }
+    .stage { height: clamp(520px, 70vh, 760px); }
   }
   @media (max-width: 700px) {
     .block { padding-block: 3.25rem; }
-    .stage { height: 520px; }
+    .stage { height: min(142vw, 640px); }
+    .detail { padding: 1.25rem; }
     .index { flex-direction: column; }
     .about-cols { grid-template-columns: minmax(0, 1fr); }
   }
