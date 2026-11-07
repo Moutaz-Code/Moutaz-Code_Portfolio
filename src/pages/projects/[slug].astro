@@ -16,7 +16,7 @@ const { slug } = Astro.params;
 const project = await contentSource.getProjectBySlug(slug!);
 if (!project) return Astro.redirect("/404");
 
-const { title, summary, tags, links, media, content, role, team, timeframe, stack, githubRepo, itchEmbedUrl, shaderToyId, category, kind, award, highlights } = project;
+const { title, summary, tags, links, media, content, role, team, timeframe, stack, githubRepo, itchEmbedUrl, shaderToyId, category, kind, award, highlights, wip } = project;
 const { Content } = content;
 
 const all = await contentSource.listProjects();
@@ -33,7 +33,7 @@ const allLinks = [...links, ...(githubRepo ? [{ label: "Source on GitHub", url: 
     <header class="head">
       <p class="cat"><span class="pip" style={`background: var(--${category.toLowerCase()})`}></span>{category}{kind && ` · ${kind}`}</p>
       <h1>{title}</h1>
-      {award && <span class="award">{award}</span>}
+      {(award || wip) && <p class="badges">{award && <span class="award">{award}</span>}{wip && <span class="wip">Under construction</span>}</p>}
       <p class="sum">{summary}</p>
     </header>
 
@@ -86,7 +86,7 @@ const allLinks = [...links, ...(githubRepo ? [{ label: "Source on GitHub", url: 
   .cat { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--muted); font: 500 0.72rem/1 var(--mono); font-stretch: 87.5%; text-transform: uppercase; letter-spacing: 0.04em; }
   .pip { display: inline-block; width: 9px; height: 9px; border-radius: 2px; }
   h1 { font-size: clamp(2.3rem, 6vw, 4rem); font-stretch: 118%; font-weight: 800; line-height: 1; letter-spacing: -0.025em; }
-  .award { align-self: flex-start; }
+  .badges { display: flex; flex-wrap: wrap; gap: 0.4rem; }
   .sum { font-size: 1.15rem; color: var(--muted); max-width: 60ch; }
   .facts { display: flex; flex-wrap: wrap; gap: 1rem 2.5rem; margin: 2rem 0 0; padding: 1.1rem 0; border-block: 1px solid var(--line); }
   .facts dd { margin: 0.3rem 0 0; font-size: 0.95rem; }

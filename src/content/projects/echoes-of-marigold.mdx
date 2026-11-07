@@ -26,18 +26,30 @@ kind: Vertical slice
 award: Best Art Direction
 accent: "#D9822B"
 order: 3
+team: Team of 3
 highlights:
   - Player controls and the interaction system
-  - Terrain generation
-  - Custom shaders and in-game lighting
+  - Tilemap levels with parallax backgrounds
+  - 2D lights and the post-processing stack
+  - Concept art that became the pumpkin boss
   - Debugging and optimisation for the itch.io release
 ---
 
 Deliver parcels across a distant kingdom and uncover its secrets along the way.
 
-This was my first big game and my first time using Unity. We built it as a vertical slice during Endless Studios'
-six-month programme. It won Best Art Direction at Endless Studios' UAE GameMakers competition. Afterwards we kept
-working on it, fixing bugs and getting it ready for an itch.io release.
+This was my first formal game project and my first time using Unity. Three of us built it, one artist and two
+programmers, as a vertical slice during Endless Studios' six-month programme. It won Best Art Direction at Endless
+Studios' UAE GameMakers competition. Afterwards we kept working on it, fixing bugs and getting it ready for an itch.io
+release.
 
-I built the core gameplay: player controls, the interaction system and terrain generation. I also wrote custom shaders
-and set up the in-game lighting, and later debugged and optimised the gameplay systems so the build ran smoothly.
+## What I did
+
+The programming was split between me and the other programmer, so most systems passed through both of us. The parts I
+owned or led:
+
+- **Player controls and the interaction system** that the delivery loop runs on.
+- **Levels** built from tilemaps, with parallax layers behind them to give the painted backgrounds depth.
+- **Lighting and look.** URP 2D lights and the post-processing stack, tuned with our artist so the scenes kept the
+  storybook feel of the key art.
+- **Concept art.** One of my sketches was developed into a character in the game: the giant pumpkin boss.
+- **Debugging and optimisation** for the release build, so it ran smoothly on ordinary machines.

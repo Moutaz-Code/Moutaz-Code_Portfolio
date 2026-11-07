@@ -5,7 +5,7 @@ export const ART = { x: 28, y: 96, w: 444, h: 262 };
 export type CardData = {
   slug: string; title: string; category: "Games" | "Graphics" | "Software"; kind?: string;
   accent: string; award?: string; summary: string; role?: string; timeframe?: string;
-  stack: string[]; highlights: string[]; cover?: string; links: { label: string; url: string }[];
+  stack: string[]; highlights: string[]; wip?: boolean; cover?: string; links: { label: string; url: string }[];
 };
 
 const CAT: Record<string, string> = { Games: "#2F7A4B", Graphics: "#2D63B8", Software: "#A85A12" };
@@ -83,6 +83,8 @@ export function drawFront(ctx: CanvasRenderingContext2D, d: CardData, img: HTMLI
     ctx.fillStyle = "#2B1C00"; ctx.fillText(d.award, ART.x + 23, ART.y + ART.h - 22);
   }
 
+  if (d.wip) tape(ctx, ART.x + ART.w - 12, ART.y + 12);
+
   const y = ART.y + ART.h + 40;
   ctx.fillStyle = muted; ctx.font = `500 15px ${MONO}`;
   ctx.fillText(`${d.category.toUpperCase()}  ·  ${(d.kind ?? "").toUpperCase()}`, ix + 22, y);
@@ -94,6 +96,24 @@ export function drawFront(ctx: CanvasRenderingContext2D, d: CardData, img: HTMLI
   ctx.fillStyle = line; ctx.fillRect(ix + 22, fy - 34, iw - 44, 2);
   ctx.fillStyle = muted; ctx.font = `500 17px ${DISPLAY}`; ctx.fillText(fit(ctx, d.role ?? "", iw - 210), ix + 22, fy);
   ctx.font = `400 14px ${MONO}`; ctx.textAlign = "right"; ctx.fillText(d.timeframe ?? "", ix + iw - 22, fy); ctx.textAlign = "left";
+}
+
+/** Small striped "under construction" tape, anchored at its top-right corner. */
+function tape(ctx: CanvasRenderingContext2D, right: number, top: number) {
+  const label = "UNDER CONSTRUCTION", band = 22;
+  ctx.font = `600 13px ${MONO}`;
+  const tw = ctx.measureText(label).width, h = 28, w = tw + band * 2 + 20, x = right - w;
+  ctx.save(); rr(ctx, x, top, w, h, 5); ctx.clip();
+  ctx.fillStyle = "#F2C14E"; ctx.fillRect(x, top, w, h);
+  const stripes = (x0: number) => {
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, top, band, h); ctx.clip();
+    ctx.fillStyle = "#2B2210";
+    for (let s = -h; s < band + h; s += 10) { ctx.beginPath(); ctx.moveTo(x0 + s, top + h); ctx.lineTo(x0 + s + 5, top + h); ctx.lineTo(x0 + s + 5 + h, top); ctx.lineTo(x0 + s + h, top); ctx.fill(); }
+    ctx.restore();
+  };
+  stripes(x); stripes(x + w - band);
+  ctx.fillStyle = "#2B2210"; ctx.textAlign = "center"; ctx.fillText(label, x + w / 2, top + 19); ctx.textAlign = "left";
+  ctx.restore();
 }
 
 export function drawBack(ctx: CanvasRenderingContext2D, d: CardData) {

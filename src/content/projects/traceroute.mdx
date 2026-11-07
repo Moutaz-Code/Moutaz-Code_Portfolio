@@ -1,0 +1,73 @@
+---
+title: TraceRoute
+summary: "A techno-noir forensic mystery for Android. Java and OpenGL ES 3.0 with no engine, built by a team of three in about three weeks."
+tags: [android, java, opengl, glsl, post-processing, game-architecture, mobile]
+dateStart: 2026-05-22
+dateEnd: 2026-06-08
+role: Architecture, rendering and core systems
+stack: [Java, Android, OpenGL ES 3.0, SQLite, JUnit]
+category: Games
+kind: Mobile game
+accent: "#4F7A5A"
+team: Team of 3
+order: 4
+highlights:
+  - Base architecture and module structure
+  - OpenGL ES rendering pipeline and room post-process shader
+  - Room navigation and hotspots from normalised touch input
+  - Evidence, thread, timeline and statement systems
+  - Handheld and terminal mechanics, save state in SQLite
+media:
+  - src: /projects/traceroute/office.webp
+    alt: The victim's home office at night, light falling across a desk with three monitors and a cork board
+  - src: /projects/traceroute/handheld.webp
+    alt: The handheld device UI showing the Threads tab with three investigation leads
+  - src: /projects/traceroute/living-room.webp
+    alt: A dim living room under a single pendant lamp, with a body under a sheet on the rug
+  - src: /projects/traceroute/laptop.webp
+    alt: The victim's laptop desktop with an unsent draft addressed to legal counsel
+  - src: /projects/traceroute/kitchen.webp
+    alt: A dark blue kitchen with a leaning picture frame on the floor
+---
+
+A cyber-forensics investigator is called to an apartment where a man has been found dead. The machine records say one
+thing; the body says another. You tap through the rooms collecting evidence, read the victim's laptop, question three
+suspects, and use a handheld device to sort out threads, statements and a timeline until the manipulated part of the
+record gives itself away.
+
+It was built for a university mobile development course by three of us in about three weeks, with a hard rule from
+the start: **Java and Android only. No Unity, no Unreal, no Kotlin.** My two teammates are strong programmers who
+don't come from games, so a lot of my job was turning game-shaped problems into structure they could build on.
+
+## Architecture
+
+I set up the base: the module layout and the first forty-odd classes, so all three of us were filling in agreed
+interfaces instead of inventing structure in parallel. `MainActivity` stays thin and hosts a shell fragment; the world
+is a `GLSurfaceView`, and the handheld, laptop, dialogue and completion screens are ordinary Android views layered on
+top as fragments.
+
+A single `GameRuntime` owns the gameplay systems: evidence, investigation threads, timeline, suspect statements and a
+guidance system that works out the next lead. The case itself is authored data in a JSON file, so collecting a piece of
+evidence updates evidence state, which updates threads, which updates the timeline and statements, without any of that
+being hard-coded per clue. Progress is saved to SQLite as a compact key/value table.
+
+## Rendering
+
+The rooms are drawn through a small OpenGL ES 3.0 renderer I wrote for it: shader programs, textures, textured quads,
+a camera and a render pipeline, starting from the first commit where a shader filled the screen with a solid colour.
+Touch input arrives as Android `MotionEvent`s, is normalised to 0–1 screen space and queued onto the GL thread, where
+the hotspot system maps it to evidence, navigation, the laptop or the handheld.
+
+The room art goes through a post-process pass that only touches the GL view, never the Android UI on top: exposure and
+an ACES-approximation tonemapper, a vignette, optional ordered dithering (4×4 or 8×8 Bayer, or hash noise) with a
+three-tone palette, and optional scanlines and CRT warp. Every value lives in one settings class so the look can be
+tuned in one place.
+
+## Systems
+
+I built the evidence, thread, statement and final-timeline systems, the handheld and terminal mechanics, the guidance
+system and visual annotations, audio cues, and the persistence for case completion. JUnit tests cover progression,
+content validation, hotspot behaviour, settings and save state.
+
+We planned and tracked the whole thing on a Miro board, which kept a three-week, three-person project from turning
+into three separate games.

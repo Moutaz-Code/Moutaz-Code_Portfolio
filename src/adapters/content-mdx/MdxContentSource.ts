@@ -59,6 +59,7 @@ function toSummary(e: ProjectEntry): ProjectSummary {
     team: d.team,
     role: d.role,
     highlights: d.highlights,
+    wip: d.wip,
     order: d.order,
     timeframe: formatTimeframe(d.dateStart, d.dateEnd, d.status),
     stack: d.stack,
