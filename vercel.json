@@ -1,0 +1,13 @@
+{
+  "redirects": [
+    { "source": "/about", "destination": "/#about", "permanent": true },
+    { "source": "/contact", "destination": "/#contact", "permanent": true },
+    { "source": "/resume", "destination": "/#about", "permanent": true },
+    { "source": "/search", "destination": "/projects", "permanent": true },
+    { "source": "/tags", "destination": "/projects", "permanent": true },
+    { "source": "/tags/:tag", "destination": "/projects?tag=:tag", "permanent": true },
+    { "source": "/blog", "destination": "/", "permanent": false },
+    { "source": "/blog/:slug", "destination": "/", "permanent": false },
+    { "source": "/rss.xml", "destination": "/", "permanent": false }
+  ]
+}

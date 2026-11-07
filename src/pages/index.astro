@@ -1,37 +1,354 @@
 ---
-import { contentSource } from "../app/content";
 import BaseLayout from "../ui/layouts/BaseLayout.astro";
-import HeroSignature from "../ui/components/home/HeroSignature.astro";
-import HeroSignatureInit from "../ui/components/home/HeroSignatureInit.astro";
-import ProjectConstellation from "../ui/components/home/ProjectConstellation.astro";
-import ConstellationInit from "../ui/components/home/ConstellationInit.astro";
-import FeaturedProjects from "../ui/components/home/FeaturedProjects.astro";
-import SkillsStrip from "../ui/components/home/SkillsStrip.astro";
-import ExperienceSection from "../ui/components/home/ExperienceSection.astro";
-import LatestPosts from "../ui/components/home/LatestPosts.astro";
-import ContactCTA from "../ui/components/home/ContactCTA.astro";
-import MagneticInit from "../ui/components/motion/MagneticInit.astro";
-import SectionDivider from "../ui/components/signature/SectionDivider.astro";
-import DividerInit from "../ui/components/signature/DividerInit.astro";
+import ShaderRow from "../ui/components/home/ShaderRow.astro";
+import { contentSource } from "../app/content";
+import { profileConfig } from "../app/profileConfig";
+import { siteConfig } from "../app/siteConfig";
 
-const featuredProjects = await contentSource.listProjects({ featuredOnly: true, limit: 7 });
-const latestPosts = await contentSource.listPosts({ limit: 2 });
-const gridProjects = featuredProjects.slice(0, 3);
+const projects = await contentSource.listProjects();
+const FALLBACK = { Games: "#2F7A4B", Graphics: "#2D63B8", Software: "#A85A12" } as const;
+const cards = projects.map((p) => ({
+  slug: p.slug,
+  title: p.title,
+  category: p.category,
+  kind: p.kind,
+  accent: p.accent ?? FALLBACK[p.category],
+  award: p.award,
+  summary: p.summary,
+  role: p.role,
+  timeframe: p.timeframe,
+  stack: p.stack,
+  highlights: p.highlights,
+  cover: p.primaryImage?.src,
+  links: p.links,
+}));
+const categories = ["Games", "Graphics", "Software"] as const;
+const email = siteConfig.socialLinks.email.replace("mailto:", "");
+const links = siteConfig.socialLinks;
 ---
 
-<BaseLayout enableMotion enableSmoothScroll enableAmbient enableCursor enablePageTransitions>
-  <HeroSignature />
-  <ProjectConstellation projects={featuredProjects} />
-  <SectionDivider variant="wave" class="my-4" />
-  <FeaturedProjects projects={gridProjects} />
-  <SectionDivider variant="circuit" class="my-4" />
-  <SkillsStrip />
-  <SectionDivider variant="harmonic" class="my-4" />
-  <ExperienceSection />
-  <LatestPosts posts={latestPosts} />
-  <ContactCTA />
-  <HeroSignatureInit />
-  <MagneticInit />
-  <DividerInit />
-  <ConstellationInit />
+<BaseLayout>
+  <!-- Intro -->
+  <section class="wrap intro" aria-labelledby="intro-h">
+    <div class="intro-main">
+      <p class="label">Moutaz Pharaon · Abu Dhabi</p>
+      <h1 id="intro-h">Technical artist and graphics programmer.</h1>
+      <p class="lede">
+        I build games in Unity and spend most of my time on how they look: shaders, post-processing, lighting and the
+        tools around them. Below are the projects, and three of the techniques running live in your browser.
+      </p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="#projects">See the projects</a>
+        <a class="btn" href="#contact">Get in touch</a>
+        <a class="btn" href={links.github} rel="noreferrer">GitHub</a>
+      </div>
+    </div>
+
+    <aside class="now" aria-label="Highlights and current work">
+      <p class="label">Results</p>
+      <ul class="facts">
+        <li><span class="award">1st place</span><span>Shift Game Jam 2026<br /><a href="/projects/duck-around">Duck Around</a></span></li>
+        <li><span class="award">Best Art Direction</span><span>UAE GameMakers<br /><a href="/projects/echoes-of-marigold">Echoes of Marigold</a></span></li>
+      </ul>
+      <p class="label">Now</p>
+      <ul class="now-list">
+        <li>Mentoring game-development students at Endless Studios</li>
+        <li>Building <a href="/projects/bezium">Bezium</a>, vector graphics for Unity</li>
+        <li>Researching a physically based sky for URP</li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- Projects -->
+  <section id="projects" class="wrap block" aria-labelledby="projects-h" data-deck>
+    <header class="block-head">
+      <div>
+        <h2 id="projects-h">Projects</h2>
+        <p class="muted">Games first, then graphics work and software. Click a card or drag it onto the table, and click it again to flip it.</p>
+      </div>
+      <div class="filters" role="group" aria-label="Filter projects">
+        <button type="button" class="chip" data-filter="all" aria-pressed="true">All</button>
+        {categories.map((c) => (
+          <button type="button" class="chip" data-filter={c} aria-pressed="false"><span class="pip" style={`background: var(--${c.toLowerCase()})`}></span>{c}</button>
+        ))}
+      </div>
+    </header>
+
+    <script type="application/json" data-deck-data set:html={JSON.stringify(cards)} />
+
+    <div class="deck">
+      <div class="stage-col">
+        <div class="stage" data-deck-stage tabindex="0" aria-label="Project cards. Left and right arrow keys play the previous or next card; Enter flips the card on the table."></div>
+        <nav class="index" aria-label="All projects in the deck">
+          <div class="steps">
+            <button type="button" class="step" data-deck-step="-1" aria-label="Previous project">← Prev</button>
+            <button type="button" class="step" data-deck-step="1" aria-label="Next project">Next →</button>
+          </div>
+          <ul>
+            {projects.map((p) => (
+              <li><a href={`/projects/${p.slug}`} data-pick={p.slug}><span class="pip" style={`background: var(--${p.category.toLowerCase()})`}></span>{p.title}</a></li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+
+      <div class="side">
+        {projects.map((p, i) => (
+          <article class="detail" data-detail={p.slug} hidden={i !== 0} aria-live="polite">
+            <p class="cat"><span class="pip" style={`background: var(--${p.category.toLowerCase()})`}></span>{p.category}{p.kind && ` · ${p.kind}`}</p>
+            <h3>{p.title}</h3>
+            {p.award && <span class="award">{p.award}</span>}
+            <p class="sum">{p.summary}</p>
+            <dl>
+              {p.role && <><dt>Role</dt><dd>{p.role}</dd></>}
+              {p.team && <><dt>Team</dt><dd>{p.team}</dd></>}
+              {p.stack.length > 0 && <><dt>Stack</dt><dd>{p.stack.join(", ")}</dd></>}
+              {p.timeframe && <><dt>When</dt><dd class="mono">{p.timeframe}</dd></>}
+            </dl>
+            {p.highlights.length > 0 && <ul class="hl">{p.highlights.map((h) => <li>{h}</li>)}</ul>}
+            <p class="detail-links">
+              <a href={`/projects/${p.slug}`}>Read the write-up</a>
+              {p.links.map((l) => <a href={l.url} rel="noreferrer">{l.label}</a>)}
+            </p>
+          </article>
+        ))}
+        <a class="all-link" href="/projects">All projects, with search and tags →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shaders -->
+  <section id="shaders" class="wrap block" aria-labelledby="shaders-h">
+    <header class="block-head">
+      <div>
+        <h2 id="shaders-h">Shaders</h2>
+        <p class="muted">Each technique as it shipped in Unity, next to a WebGL port written for this page. Drag the windows and change the parameters.</p>
+      </div>
+    </header>
+
+    <div class="rows">
+      <ShaderRow
+        id="outline" index={1} title="Outline and posterise"
+        from={{ label: "Duck Around", href: "/projects/duck-around" }}
+        clip={{ src: "/projects/duck-around/gameplay.mp4", poster: "/projects/duck-around/lens.webp", alt: "Duck Around gameplay with ink outlines and banded shading" }}
+        hint="drag to turn"
+        params={[
+          { kind: "range", name: "bands", label: "Colour bands", min: 2, max: 10, step: 1, value: 4, digits: 0 },
+          { kind: "range", name: "line", label: "Line threshold", min: 0.05, max: 1.5, step: 0.01, value: 0.35 },
+          { kind: "range", name: "width", label: "Line width", min: 0.5, max: 3, step: 0.1, value: 1.2, digits: 1 },
+        ]}
+      >
+        <p>Duck Around's look is one full-screen pass: Sobel edge detection, then colour banding. In Unity it lives in a Shader Graph custom function node, because a 3×3 convolution is a few lines of HLSL and a tangle of nodes.</p>
+        <p>The port renders its scene twice: view-space normals into one target, lit colour into another. Sobel on the <strong>normals</strong> catches silhouettes and creases that have no contrast in colour; Sobel on <strong>luminance</strong> catches the rest. The colour is quantised to <em>N</em> bands and the edges are inked on top.</p>
+        <p class="mono cost">Cost: one extra scene draw, 18 texture taps per pixel.</p>
+      </ShaderRow>
+
+      <ShaderRow
+        id="cube" index={2} title="Stencil portals"
+        from={{ label: "Impossible Cube", href: "/projects/impossible-cube" }}
+        clip={{ src: "/projects/impossible-cube/cube.mp4", poster: "/projects/impossible-cube/cover.webp", alt: "The impossible cube rotating in the Unity editor, each face showing a different interior" }}
+        hint="drag to turn"
+        params={[
+          { kind: "check", name: "masks", label: "Show the stencil masks" },
+          { kind: "range", name: "spin", label: "Spin", min: 0, max: 1, step: 0.01, value: 0.35 },
+        ]}
+      >
+        <p>Each face of the cube is a quad that draws no colour and writes its own ID, 1 to 6, into the stencil buffer. Every world only renders where the stencil equals its ID, so six worlds share the same space and each one is only visible through its own face.</p>
+        <p>In Unity the faces are a ShaderLab shader with <code>ZWrite Off</code> and no colour output, and each world is drawn back in by a URP Render Objects feature with an <em>Equal</em> stencil test. The port uses three.js material stencil state the same way, with back-face culling so the far faces never overwrite the near ones. Tick the box to see the masks.</p>
+        <p class="mono cost">Cost: one extra filtered draw per world. No render targets.</p>
+      </ShaderRow>
+
+      <ShaderRow
+        id="sky" index={3} title="Cartoon sky"
+        from={{ label: "Duck Around", href: "/projects/duck-around" }}
+        clip={{ src: "/projects/duck-around/gameplay.mp4", poster: "/projects/duck-around/cover.webp", alt: "Duck Around gameplay under the cartoon sky" }}
+        hint="drag to scrub time"
+        params={[
+          { kind: "range", name: "time", label: "Time of day", min: 0, max: 1, step: 0.001, value: 0.86 },
+          { kind: "range", name: "cover", label: "Cloud cover", min: 0, max: 1, step: 0.01, value: 0.5 },
+        ]}
+      >
+        <p>A vertical gradient driven by time of day and posterised into bands, stars from a hashed grid, and clouds built from four ellipse SDFs per grid cell. Each cell hashes to a value that's compared against cloud cover, so the slider is just a threshold.</p>
+        <p>The two-tone shading is the same cloud SDF sampled again with a small vertical offset: wherever the shifted sample falls outside the cloud, that pixel gets the lit colour. It reads as a flat shadow band without any lighting.</p>
+        <p class="mono cost">Cost: two cloud layers, at most two SDF evaluations each.</p>
+      </ShaderRow>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about" class="wrap section" aria-labelledby="about-h">
+    <div class="section-label">
+      <h2 id="about-h">About</h2>
+      <p>Three years of games, mostly rendering.</p>
+    </div>
+    <div class="about">
+      <div class="about-text">
+        <p>I've been making games for over three years, almost all of it in Unity. My strongest area is the rendering side: shaders in HLSL, GLSL and Shader Graph, post-processing on URP's Render Graph, and lighting. In jams I also pick up modelling when the team needs props.</p>
+        <p>I studied Information Technology at Abu Dhabi University, so I've also built software outside games: an offline digital-forensics platform for my capstone, Android apps and web tools. That's where the engineering habits in my game work come from: narrow interfaces, automated tests and reproducible runs.</p>
+        <p>Right now I mentor game-development students at Endless Studios, build Bezium, and research a physically based sky for URP.</p>
+      </div>
+
+      <div class="about-cols">
+        <div>
+          <p class="label">Skills</p>
+          <dl class="skills">
+            {profileConfig.skills.map((s) => (<><dt>{s.group}</dt><dd>{s.items.join(", ")}</dd></>))}
+          </dl>
+        </div>
+        <div>
+          <p class="label">Experience</p>
+          <ol class="xp">
+            {profileConfig.experience.map((e) => (
+              <li><span class="xp-title">{e.title}</span><span class="muted">{e.org}</span><span class="mono xp-when">{e.period}</span></li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="wrap section" aria-labelledby="contact-h">
+    <div class="section-label">
+      <h2 id="contact-h">Contact</h2>
+      <p>Open to technical art, graphics and gameplay programming roles.</p>
+    </div>
+    <div class="contact">
+      <p class="muted">Email is the quickest way to reach me.</p>
+      <div class="mail">
+        <span class="addr" data-email>{email}</span>
+        <button type="button" class="btn" data-copy={email}>Copy</button>
+      </div>
+      <p class="contact-links">
+        <a href={links.linkedin} rel="noreferrer">LinkedIn</a>
+        <a href={links.github} rel="noreferrer">GitHub</a>
+        <a href={links.itch} rel="noreferrer">itch.io</a>
+        <a href={links.shadertoy} rel="noreferrer">Shadertoy</a>
+      </p>
+    </div>
+  </section>
 </BaseLayout>
+
+<script>
+  // three.js is loaded only when the deck or a shader window comes near the viewport.
+  const near = (el: Element, fn: () => void) => {
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); fn(); } }, { rootMargin: "500px" });
+    io.observe(el);
+  };
+  const deck = document.querySelector<HTMLElement>("[data-deck]");
+  if (deck) near(deck, () => import("../ui/three/deck").then((m) => m.initDeck(deck)).catch((e) => console.error(e)));
+  document.querySelectorAll<HTMLElement>("[data-shader]").forEach((row) =>
+    near(row, () => import("../ui/three/shaders").then((m) => m.initShader(row)).catch((e) => console.error(e))),
+  );
+
+  // Clips play only while on screen; with reduced motion they get controls instead.
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const clips = document.querySelectorAll<HTMLVideoElement>("video[data-clip]");
+  if (reduce) clips.forEach((v) => { v.controls = true; v.preload = "metadata"; });
+  else {
+    const io = new IntersectionObserver((es) => es.forEach(({ target, isIntersecting }) => {
+      const v = target as HTMLVideoElement;
+      if (isIntersecting) v.play().catch(() => { v.controls = true; }); else v.pause();
+    }), { threshold: 0.35 });
+    clips.forEach((v) => io.observe(v));
+  }
+
+  // Copy email
+  document.querySelectorAll<HTMLButtonElement>("[data-copy]").forEach((b) => b.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(b.dataset.copy!); b.textContent = "Copied"; }
+    catch { const r = document.createRange(); r.selectNodeContents(document.querySelector("[data-email]")!); getSelection()?.removeAllRanges(); getSelection()?.addRange(r); b.textContent = "Selected"; }
+    setTimeout(() => { b.textContent = "Copy"; }, 1800);
+  }));
+</script>
+
+<style>
+  /* Intro */
+  .intro { display: grid; grid-template-columns: minmax(0, 1fr) 20rem; gap: 2rem 4rem; align-items: end; padding-block: 5.5rem 4.5rem; }
+  .intro-main { display: flex; flex-direction: column; gap: 1.25rem; }
+  .intro h1 { font-size: clamp(2.5rem, 6.2vw, 4.6rem); font-stretch: 118%; font-weight: 800; line-height: 0.98; letter-spacing: -0.025em; max-width: 13ch; }
+  .lede { font-size: 1.15rem; color: var(--muted); max-width: 54ch; line-height: 1.6; }
+  .ctas { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.4rem; }
+  .now { display: flex; flex-direction: column; gap: 0.7rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); }
+  .facts, .now-list { list-style: none; margin: 0 0 0.6rem; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+  .facts li { display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; font-size: 0.92rem; line-height: 1.4; color: var(--muted); }
+  .facts a, .now-list a { color: var(--text); text-decoration-color: var(--line-2); }
+  .now-list { gap: 0.5rem; margin-bottom: 0; }
+  .now-list li { font-size: 0.92rem; line-height: 1.45; padding-left: 0.9rem; position: relative; }
+  .now-list li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 5px; height: 5px; background: var(--accent); }
+
+  /* Wide blocks (projects, shaders) */
+  .block { padding-block: 4.5rem; border-top: 1px solid var(--line); }
+  .block-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem 2rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
+  .block-head h2 { font-size: clamp(2rem, 4vw, 2.75rem); }
+  .block-head p { margin-top: 0.6rem; max-width: 58ch; }
+  .filters { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+  /* Deck */
+  .deck { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; gap: 1.25rem; align-items: start; }
+  .stage { position: relative; height: 600px; border: 1px solid var(--line); border-radius: var(--r-lg); background: color-mix(in srgb, var(--panel) 60%, transparent); overflow: hidden; touch-action: pan-y; outline-offset: -2px; }
+  .stage :global(canvas) { display: block; width: 100%; height: 100%; }
+  .stage:global(.dragging) { cursor: grabbing; }
+  .stage-col { display: flex; flex-direction: column; gap: 0.9rem; min-width: 0; }
+  .step { min-height: 34px; padding: 0 0.7rem; border-radius: var(--r); border: 1px solid var(--line); background: var(--panel); color: var(--text); font: 500 0.66rem/1 var(--mono); font-stretch: 87.5%; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; white-space: nowrap; }
+  .step:hover { border-color: var(--line-2); }
+  .side { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+  .detail { display: flex; flex-direction: column; gap: 0.75rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--panel); }
+  .detail[hidden] { display: none; }
+  .cat { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--muted); font: 500 0.72rem/1 var(--mono); font-stretch: 87.5%; text-transform: uppercase; letter-spacing: 0.04em; }
+  .pip { display: inline-block; width: 9px; height: 9px; border-radius: 2px; flex: none; }
+  .detail h3 { font-size: 1.6rem; }
+  .detail .award { align-self: flex-start; }
+  .sum { color: var(--muted); font-size: 0.95rem; line-height: 1.55; }
+  .detail dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.35rem 1rem; font-size: 0.9rem; }
+  .detail dt { color: var(--faint); }
+  .detail dd { margin: 0; }
+  .detail dd.mono { padding-top: 0.15rem; }
+  .hl { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.92rem; border-top: 1px solid var(--line); padding-top: 0.8rem; }
+  .hl li { padding-left: 1rem; position: relative; line-height: 1.45; }
+  .hl li::before { content: ""; position: absolute; left: 0; top: 0.5em; width: 6px; height: 6px; background: var(--line-2); }
+  .detail-links { display: flex; flex-wrap: wrap; gap: 0.4rem 1.1rem; font-weight: 600; font-size: 0.92rem; }
+  .index { display: flex; align-items: flex-start; gap: 0.75rem 1rem; }
+  .steps { display: flex; gap: 6px; flex: none; }
+  .index ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .index li[hidden] { display: none; }
+  .index a[data-pick] { display: inline-flex; align-items: center; gap: 0.45rem; min-height: 34px; padding: 0 0.65rem; border: 1px solid var(--line); border-radius: var(--r); color: var(--muted); text-decoration: none; font-size: 0.85rem; font-weight: 550; white-space: nowrap; }
+  .index a[data-pick]:hover { color: var(--text); border-color: var(--line-2); }
+  .index a[aria-current="true"] { color: var(--text); border-color: var(--text); }
+  .all-link { font-size: 0.9rem; font-weight: 600; padding: 0.25rem 0.1rem; }
+
+  /* Shaders */
+  .rows :global(.cost) { color: var(--faint); }
+
+  /* About */
+  .about { display: flex; flex-direction: column; gap: 2.5rem; min-width: 0; }
+  .about-text { display: flex; flex-direction: column; gap: 1rem; max-width: 64ch; font-size: 1.05rem; }
+  .about-text p:not(:first-child) { color: var(--muted); }
+  .about-cols { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 2rem 3rem; }
+  .skills { margin: 0.8rem 0 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.6rem 1.25rem; font-size: 0.95rem; }
+  .skills dt { font-weight: 650; }
+  .skills dd { margin: 0; color: var(--muted); }
+  .xp { list-style: none; margin: 0.8rem 0 0; padding: 0; display: flex; flex-direction: column; }
+  .xp li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.1rem 1rem; padding: 0.7rem 0; border-top: 1px solid var(--line); font-size: 0.95rem; }
+  .xp li:first-child { border-top: 0; padding-top: 0; }
+  .xp-title { font-weight: 650; }
+  .xp .muted { grid-column: 1; }
+  .xp-when { grid-column: 2; grid-row: 1; color: var(--faint); padding-top: 0.2rem; }
+
+  /* Contact */
+  .contact { display: flex; flex-direction: column; gap: 1rem; }
+  .mail { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; }
+  .addr { font: 700 clamp(1.25rem, 3.6vw, 2.1rem)/1.15 var(--display); font-stretch: 110%; user-select: all; overflow-wrap: anywhere; }
+  .contact-links { display: flex; flex-wrap: wrap; gap: 0.5rem 1.4rem; font-weight: 600; }
+
+  @media (max-width: 980px) {
+    .intro { grid-template-columns: minmax(0, 1fr); padding-block: 3.5rem 3rem; align-items: start; }
+    .now { max-width: 34rem; }
+    .deck { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .block { padding-block: 3.25rem; }
+    .stage { height: 520px; }
+    .index { flex-direction: column; }
+    .about-cols { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

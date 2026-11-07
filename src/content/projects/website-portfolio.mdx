@@ -1,30 +1,39 @@
 ---
-title: Website Portfolio
-summary: This very website.
-tags:
-  - web-development
-  - astro
-  - javascript
-  - typescript
-  - html
-  - css
-  - nodejs
+title: This website
+summary: "A static Astro site with MDX content, no CMS and a three.js card deck. Pruned from a heavier build into something I can maintain."
+tags: [web-development, astro, typescript, threejs, webgl]
 status: ongoing
-featured: false
 dateStart: 2024-05-17
-role: Solo Developer
-stack:
-  - Astro
-  - TypeScript
-  - Tailwind CSS
-  - MDX
-media:
-  - type: image
-    src: https://res.cloudinary.com/dnal0wnob/image/upload/v1773151891/Screenshot_2026-03-10_181111_k4z0xo.png
-    alt: Screenshot of the portfolio home page
+role: Solo
+stack: [Astro, TypeScript, three.js, MDX]
+category: Software
+kind: Website
+accent: "#4D5566"
+team: Solo
+order: 8
+highlights:
+  - Static Astro build with MDX content
+  - Card deck and shader windows in three.js
+  - Card faces drawn with Canvas2D
+  - One renderer loop, paused off screen
 githubRepo: Moutaz-Code/Moutaz-Code_Portfolio
 ---
 
-## Constraints
+The first version of this site had a CMS, a search index, smooth scrolling, a custom cursor and a few animation
+libraries. It was more site than I could keep updated. This version is static: each project is one MDX file with a
+schema, and adding a project means adding a file and a folder of media.
 
-Time constraints. This project, while having been started with similar intentions in 2024, has gotten the most major sum of its progress in this last development phase due to incoming deadlines.
+## The deck
+
+The projects on the home page are a hand of cards in three.js. Each face is drawn with Canvas2D (frame, title, art,
+type line, text) and uploaded as a texture, so a card is two textured quads and costs almost nothing to draw. Cards are
+dealt from a pile, fanned in the hand, and can be clicked or dragged onto the table and flipped to show what I did.
+Positions, rotation and flips are eased with frame-rate-independent exponential smoothing, and the filters send cards
+back to the pile instead of rebuilding the scene.
+
+## Shader windows
+
+Each shader on the home page has a recorded clip from the original project and a live WebGL window running a port of
+the technique: a Sobel outline on a normals buffer, stencil-buffer portals, and the cartoon sky. Every view registers
+with one shared animation loop and only renders while it's on screen. With reduced motion turned on, nothing
+animates by itself.
