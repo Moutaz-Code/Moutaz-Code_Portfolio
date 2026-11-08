@@ -24,7 +24,7 @@ accent: "#7E62C9"
 order: 5
 highlights:
   - Sand dune, day–night and view-angle shaders
-  - Dither, palette and outline post stack
+  - Dither, palette and outline post stack, written from scratch
   - Lighting and particles on set paths
 ---
 
@@ -36,9 +36,10 @@ whole thing lives or dies on mood, so the visuals were the job I took.
 The target was a limited palette with ordered dithering, flat colour regions and a hard screen-space outline, more like a
 printed illustration than a lit 3D scene.
 
-- **Post stack.** Dither, colour-map and screen-outline effects, built on NullTale's [VolFx](https://x.com/NullTale).
-  The work was making them read together: the order of the passes, the palette ramps, and tinting the scene before the
-  dither so the colours survive quantisation instead of collapsing into noise.
+- **Post stack.** I wrote the dither, colour-map and screen-outline passes myself, using NullTale's
+  [VolFx](https://x.com/NullTale) as a reference for the approach. The work was in making them read together: the order of
+  the passes, the palette ramps, and tinting the scene before the dither so the colours survive quantisation instead of
+  collapsing into noise.
 - **Sand dunes.** A dune shader that keeps the ridges readable after posterisation.
 - **Day–night transition** and a **view-angle effect** as Shader Graph shaders.
 
